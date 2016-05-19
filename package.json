@@ -1,0 +1,23 @@
+{
+  "name": "rollcage",
+  "version": "0.0.1",
+  "description": "Continuous Deployment Helper",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm-run-all --parallel test:*",
+    "test:acceptance": "_f() { bats test/acceptance/${1:-*.sh}; }; _f"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.binarysludge.com:sublimino/rollcage.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "bats": "^0.4.2",
+    "bats-assert": "^1.1.0"
+  },
+  "dependencies": {
+    "npm-run-all": "^1.8.0"
+  }
+}

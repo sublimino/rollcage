@@ -21,9 +21,8 @@ duplicate-remote:
 test:
   stage: test
   before_script:
-    - npm install
-    - npm run compile
     - node -v
+    - npm install
   script: 
     - npm test
 
