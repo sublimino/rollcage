@@ -16,7 +16,7 @@ cache:
 duplicate-remote:
   stage: test
   script:
-    - env; git push --mirror https://sublimino-gitlab:$SUBLIMINO_GITLAB_PASS@bitbucket.org/sublimino/$(basename "$(pwd)").git
+    - env; git push --mirror https://sublimino-gitlab:$SUBLIMINO_BITBUCKET_PASS@bitbucket.org/sublimino/$(basename "$(pwd)").git
 
 test:
   stage: test
