@@ -1,0 +1,45 @@
+image: sublimino/alpine-base:latest
+
+stages:
+  - test
+  - build
+  - deploy
+  - rollback
+
+cache:
+  untracked: true
+  paths: 
+  - /root/.npm
+  - node_modules/
+
+
+duplicate-remote:
+  stage: test
+  script:
+    - env; echo git push --mirror https://sublimino-gitlab:$SUBLIMINO_GITLAB_PASS@bitbucket.org/sublimino/$(basename "$(pwd)").git
+
+test:
+  stage: test
+  before_script:
+    - npm install
+    - npm run compile
+    - node -v
+  script: 
+    - npm test
+
+build:
+  stage: build
+  script:
+    - ./build.sh
+
+deploy:
+  stage: deploy
+  when:  on_success
+  script:
+    - echo DEPLOY
+
+rollback:
+  stage: rollback
+  when: on_failure
+  script:
+    - echo rolling back
