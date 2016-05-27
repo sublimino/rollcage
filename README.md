@@ -15,12 +15,45 @@ rollcage build [--file=dockerfile]
     - build image from Dockerfile
     - @test
     - @run
+    - @push
 
 rollcage push
+    - docker push TAG..TAGS
 
 rollcage test
-    - run tests inside contianer
+    - run image's acceptance tests from inside contianer
+    - docker run -t ${IMAGE} ${TEST_COMMAND}
     
 rollcage run
-rollcage deploy
+    - docker run -t \
+        [many many extra commands?] \
+        ${IMAGE} ${COMMAND}
+
+rollcage run 
+    - --conditional-build (build image if not exist))
+    - --force
+    - docker history IMAGE || @build
+    - @run
+
+rollcage deploy N
+    - get version N
+    - tag N as :canary
+    - get current version (also :prod)
+    - tag current version as :prev-prod (write version to .rollcage?)
+    - stop version :prod
+    - @run-hook
+    - @run next (also :canary)
+    - @test (acceptance!)
+    - re-tag version as :prod
+    
 rollcage revert
+    [inverse deploy]
+
+rollcage push
+    - docker push ${IMAGE}
+
+rollcage run-hook
+    - run hook/deploy.sh
+
+rollcage clean
+    - remove old docker images
