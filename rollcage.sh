@@ -124,7 +124,7 @@ main() {
 
   ${HANDLER}
 
-  return 1
+  return $?
 }
 
 perform_get-tags() {
@@ -144,10 +144,14 @@ perform_build() {
   local BUILD_PATH=${BUILD_PATH:-.}
   local DOCKERFILE_NAME=${DOCKERFILE_NAME:-"${BUILD_PATH}/Dockerfile"}
 
-  docker build --pull=${BUILD_PULL} \
+  local COMMAND="docker build --pull=${BUILD_PULL} \
     --tag "$(perform_get-tags)" \
     --file="${DOCKERFILE_NAME}" \
-    "${BUILD_PATH}"
+    "${BUILD_PATH}""
+
+  echo ${COMMAND}
+
+  ${COMMAND}
 }
 
 get_version() {
