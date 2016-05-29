@@ -105,7 +105,9 @@ is_empty() {
 }
 
 not_empty_or_usage() {
-    is_empty ${1-} && usage "Non-empty value required" || return 0
+    is_empty ${1-} && usage "Non-empty value required"
+    [[ ${1:0:2} == '--' ]] && usage "Value required, argument found"
+    return 0
 }
 
 check_exit_code() {
