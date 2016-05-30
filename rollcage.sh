@@ -69,7 +69,7 @@ function parse_arguments() {
   local SPLIT_ARG
   while [ $# -gt 0 ]; do
     CURRENT_ARG="${1}"
-    SPLIT_ARG=(${CURRENT_ARG//=/ });
+    IFS='=' read -ra SPLIT_ARG <<< "${CURRENT_ARG}"
     if [[ ${#SPLIT_ARG[@]} -gt 1 ]]; then
       CURRENT_ARG="${SPLIT_ARG[0]}"
       unset SPLIT_ARG[0]
