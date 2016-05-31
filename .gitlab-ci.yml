@@ -18,9 +18,8 @@ duplicate-remote:
   script:
     >
       env;
-      git push --prune \
-        https://sublimino-gitlab:$SUBLIMINO_BITBUCKET_PASS@bitbucket.org/sublimino/$(basename "$(pwd)").git \
-        +refs/remotes/origin/*:refs/heads/* +refs/tags/*:refs/tags/*
+      git push --force \
+        https://sublimino-gitlab:$SUBLIMINO_BITBUCKET_PASS@bitbucket.org/sublimino/$(basename "$(pwd)").git
 
 test:
   stage: test
