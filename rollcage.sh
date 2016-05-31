@@ -10,7 +10,7 @@
 ## Commands:
 ##  get-tags            Get auto-generated tags
 ##    --image-name=a    Image name [optional, default current directory name]
-##    --image-tag=b     Image tag [optional, default from CI environment variables]
+##    --image-tag=b     Image tag [optional, default from env vars]]
 ##    --registry-host=c Registry host [optional]
 ##    --registry-user=d Registry user [optional]
 ##  login               Login to a registry
@@ -18,6 +18,8 @@
 ##  build               Build Dockerfile
 ##    --pull=true       Pull a newer version of base image  [optional, default true]
 ##    --build-path=x/y  Set build context [optional, default is current directory]
+##  push                Push an image}
+##    --push-image      Image to push [option, default from env vars]
 ##
 ## Options:
 ##   -h, --help         Display this message
@@ -43,17 +45,19 @@ ACTION=''
 
 # get-tags
 IMAGE_NAME=
-IMAGE_TAG=
-REGISTRY_HOST=
-REGISTRY_USERNAME=
+IMAGE_TAG="${IMAGE_TAG:-}"
+REGISTRY_HOST="${REGISTRY_HOST:=}"
+REGISTRY_USER="${REGISTRY_USER:-}"
 
 # build
 BUILD_PULL=
 DOCKERFILE_PATH=
 
 # login
-REGISTRY_PASS=
+REGISTRY_PASS="${REGISTRY_PASS:-}"
 
+# push
+PUSH_IMAGE=
 
 # exit on error or pipe failure
 set -eo pipefail
@@ -91,7 +95,7 @@ function parse_arguments() {
       (--image-name) not_empty_or_usage "${NEXT_ARG:-}"; IMAGE_NAME="${NEXT_ARG}"; shift;;
       (--image-tag) not_empty_or_usage "${NEXT_ARG:-}"; IMAGE_TAG="${NEXT_ARG}"; shift;;
       (--registry-host) not_empty_or_usage "${NEXT_ARG:-}"; REGISTRY_HOST="${NEXT_ARG}"; shift;;
-      (--registry-user) not_empty_or_usage "${NEXT_ARG:-}"; REGISTRY_USERNAME="${NEXT_ARG}"; shift;;
+      (--registry-user) not_empty_or_usage "${NEXT_ARG:-}"; REGISTRY_USER="${NEXT_ARG}"; shift;;
 
       (build) ACTION=${CURRENT_ARG};;
       (--pull) not_empty_or_usage "${NEXT_ARG:-}"; [[ "${NEXT_ARG:-}" == 'false' ]] && BUILD_PULL=false || BUILD_PULL=true; shift;;
@@ -99,6 +103,9 @@ function parse_arguments() {
 
       (login) ACTION=${CURRENT_ARG};;
       (--registry-pass) not_empty_or_usage "${NEXT_ARG:-}"; REGISTRY_PASS="${NEXT_ARG}"; shift;;
+
+      (push) ACTION=${CURRENT_ARG};;
+      (--push-image) not_empty_or_usage "${NEXT_ARG:-}"; PUSH_IMAGE="${NEXT_ARG}"; shift;;
 
       (-n) DRY_RUN=1;;
       (-h|--help) usage;;
@@ -138,26 +145,28 @@ main() {
 
 perform_get-tags() {
   local REGISTRY_HOST="${REGISTRY_HOST:-}"
-  local REGISTRY_USERNAME="${REGISTRY_USERNAME:-}"
+  local REGISTRY_USER="${REGISTRY_USER:-}"
   local IMAGE_NAME="${IMAGE_NAME:-$(basename "$(pwd)")}"
-  local IMAGE_TAG="${IMAGE_TAG:-${CI_BUILD_ID}}"
+  local IMAGE_TAG="${IMAGE_TAG:-${CI_BUILD_ID:-}}"
+
+  [[ -z "${IMAGE_TAG}" ]] && error '--image-tag or $CI_BUILD_ID env var required'
 
   [[ -n "${REGISTRY_HOST}" ]] && REGISTRY_HOST="${REGISTRY_HOST}/"
-  [[ -n "${REGISTRY_USERNAME}" ]] && REGISTRY_USERNAME="${REGISTRY_USERNAME}/"
+  [[ -n "${REGISTRY_USER}" ]] && REGISTRY_USER="${REGISTRY_USER}/"
 
-  echo "${REGISTRY_HOST}${REGISTRY_USERNAME}${IMAGE_NAME}:${IMAGE_TAG}"
+  echo "${REGISTRY_HOST}${REGISTRY_USER}${IMAGE_NAME}:${IMAGE_TAG}"
 }
 
 perform_login() {
   local REGISTRY_HOST="${REGISTRY_HOST:-}"
-  local REGISTRY_USERNAME="${REGISTRY_USERNAME:-}"
+  local REGISTRY_USER="${REGISTRY_USER:-}"
   local REGISTRY_PASS="${REGISTRY_PASS:-}"
 
-  [[ -z "${REGISTRY_USERNAME}" ]] && error "--registry-user required for login"
+  [[ -z "${REGISTRY_USER}" ]] && error "--registry-user required for login"
   [[ -z "${REGISTRY_PASS}" ]] && error "--registry-pass required for login"
 
   local COMMAND="docker login \
-    --username=${REGISTRY_USERNAME} \
+    --username=${REGISTRY_USER} \
     --password "${REGISTRY_PASS}" \
     "${REGISTRY_HOST}""
 
@@ -179,6 +188,16 @@ perform_build() {
   echo ${COMMAND}
 
   ${COMMAND}
+}
+
+perform_push() {
+  local PUSH_IMAGE=${PUSH_IMAGE:-$(perform_get-tags)}
+
+  local COMMAND="docker push ${PUSH_IMAGE}"
+
+  echo ${COMMAND}
+
+  ${COMMAND} || perform_login && ${COMMAND}
 }
 
 get_version() {

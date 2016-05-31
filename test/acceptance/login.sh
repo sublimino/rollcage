@@ -22,14 +22,3 @@ load test_helper
     assert_output_contains "--registry-pass required for login"
 }
 
-@test "login: accepts --registry-pass arg" {
-    refute ${APP} --debug login --registry-user=123 --registry-pass=123
-    assert_output_contains "unauthorized: incorrect username or password"
-}
-
-@test "login: succeeds with valid credentials" {
-    assert ${APP} login --registry-host=registry.binarysludge.com \
-      --registry-user=test-rollcage-user \
-      --registry-pass='&B518isz0yaX!GYa$c2fnF'
-    assert_output_contains "Login Succeeded"
-}
