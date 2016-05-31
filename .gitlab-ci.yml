@@ -16,7 +16,7 @@ cache:
 duplicate-remote:
   stage: test
   script:
-    - env; git push --force https://sublimino-gitlab:$SUBLIMINO_BITBUCKET_PASS@bitbucket.org/sublimino/$(basename "$(pwd)").git
+    - env; git co $CI_BUILD_REF_NAME && git push --force https://sublimino-gitlab:$SUBLIMINO_BITBUCKET_PASS@bitbucket.org/sublimino/$(basename "$(pwd)").git
 
 test:
   stage: test
