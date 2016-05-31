@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # rollcage - simple Dockerised continuous deployment
-# 
+#
 # Andrew Martin, 19/05/2016
 # sublimino@gmail.com
 #
@@ -13,6 +13,8 @@
 ##    --image-tag=b     Image tag [optional, default from CI environment variables]
 ##    --registry-host=c Registry host [optional]
 ##    --registry-user=d Registry user [optional]
+##  login               Login to a registry
+##    --registry-pass=e Registry password for user in --registry-user [optional]
 ##  build               Build Dockerfile
 ##    --pull=true       Pull a newer version of base image  [optional, default true]
 ##    --build-path=x/y  Set build context [optional, default is current directory]
@@ -49,6 +51,10 @@ REGISTRY_USERNAME=
 BUILD_PULL=
 DOCKERFILE_PATH=
 
+# login
+REGISTRY_PASS=
+
+
 # exit on error or pipe failure
 set -eo pipefail
 # error on unset variable
@@ -58,7 +64,7 @@ set -o noclobber
 
 handle_arguments() {
   [[ $# = 0 && $EXPECTED_NUM_ARGUMENTS -gt 0 ]] && usage
-  
+
   parse_arguments "$@"
   validate_arguments "$@"
 }
@@ -90,6 +96,9 @@ function parse_arguments() {
       (build) ACTION=${CURRENT_ARG};;
       (--pull) not_empty_or_usage "${NEXT_ARG:-}"; [[ "${NEXT_ARG:-}" == 'false' ]] && BUILD_PULL=false || BUILD_PULL=true; shift;;
       (--build-path) not_empty_or_usage "${NEXT_ARG:-}"; BUILD_PATH="${NEXT_ARG}"; shift;;
+
+      (login) ACTION=${CURRENT_ARG};;
+      (--registry-pass) not_empty_or_usage "${NEXT_ARG:-}"; REGISTRY_PASS="${NEXT_ARG}"; shift;;
 
       (-n) DRY_RUN=1;;
       (-h|--help) usage;;
@@ -139,6 +148,24 @@ perform_get-tags() {
   echo "${REGISTRY_HOST}${REGISTRY_USERNAME}${IMAGE_NAME}:${IMAGE_TAG}"
 }
 
+perform_login() {
+  local REGISTRY_HOST="${REGISTRY_HOST:-}"
+  local REGISTRY_USERNAME="${REGISTRY_USERNAME:-}"
+  local REGISTRY_PASS="${REGISTRY_PASS:-}"
+
+  [[ -z "${REGISTRY_USERNAME}" ]] && error "--registry-user required for login"
+  [[ -z "${REGISTRY_PASS}" ]] && error "--registry-pass required for login"
+
+  local COMMAND="docker login \
+    --username=${REGISTRY_USERNAME} \
+    --password "${REGISTRY_PASS}" \
+    "${REGISTRY_HOST}""
+
+  echo ${COMMAND}
+
+  ${COMMAND}
+}
+
 perform_build() {
   local BUILD_PULL=${BUILD_PULL:-true}
   local BUILD_PATH=${BUILD_PATH:-.}
@@ -160,7 +187,7 @@ get_version() {
       && node -e "console.log(require('./package.json').version)") 2>/dev/null \
     || true
   )
-  [[ -z "${VERSION:-}" ]] && {
+  [[ -z "${VERSION}" ]] && {
     VERSION=$(
       grep 'version' package.json \
         | sed -E 's/.*([[:digit:]]\.[[:digit:]]\.[[:digit:]]).*/\1/g'
