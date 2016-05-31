@@ -16,10 +16,11 @@ cache:
 duplicate-remote:
   stage: test
   script:
-    - env;
-    git push --prune \
-      https://sublimino-gitlab:$SUBLIMINO_BITBUCKET_PASS@bitbucket.org/sublimino/$(basename "$(pwd)").git \
-      +refs/remotes/origin/*:refs/heads/* +refs/tags/*:refs/tags/*
+    >
+      env;
+      git push --prune \
+        https://sublimino-gitlab:$SUBLIMINO_BITBUCKET_PASS@bitbucket.org/sublimino/$(basename "$(pwd)").git \
+        +refs/remotes/origin/*:refs/heads/* +refs/tags/*:refs/tags/*
 
 test:
   stage: test
