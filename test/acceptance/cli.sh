@@ -14,10 +14,10 @@ load test_helper
 }
 
 @test "parser: rejects empty --pull arg" {
-    refute ${APP} --pull
+    run_refute  ${APP} --pull
 }
 
 @test "parser: rejects invalid --pull arg" {
-    refute ${APP} --pull --version
+    run_refute  ${APP} --pull --version
 }
 

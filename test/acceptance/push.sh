@@ -31,7 +31,7 @@ teardown() {
 
 @test "push: logs in automatically and pushes" {
 
-    assert ${APP} push \
+    run_assert  ${APP} push \
       --image-tag="${CI_BUILD_ID}" \
       --registry-host=registry.binarysludge.com \
       --registry-user=test-rollcage-user \

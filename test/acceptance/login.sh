@@ -3,22 +3,22 @@
 load test_helper
 
 @test "login: accepts login action" {
-    refute ${APP} login
+    run_refute  ${APP} login
     refute_output_contains "Action required"
 }
 
 @test "login: rejects empty --registry-pass arg" {
-    refute ${APP} login --registry-pass
+    run_refute  ${APP} login --registry-pass
     assert_output_contains "Non-empty value required"
 }
 
 @test "login: rejects without --registry-user arg" {
-    refute ${APP} login
+    run_refute  ${APP} login
     assert_output_contains "--registry-user required for login"
 }
 
 @test "login: rejects without --registry-pass arg" {
-    refute ${APP} login --registry-user=123
+    run_refute  ${APP} login --registry-user=123
     assert_output_contains "--registry-pass required for login"
 }
 
