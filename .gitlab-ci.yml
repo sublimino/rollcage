@@ -29,7 +29,7 @@ test:
 build:
   stage: build
   script:
-    - ./rollcage.sh build && ./rollcage push
+    - ./rollcage.sh build && ./rollcage push --image-user=sublimino
 
 deploy:
   stage: deploy
