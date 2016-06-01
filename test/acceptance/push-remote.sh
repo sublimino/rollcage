@@ -3,11 +3,11 @@
 load test_helper
 
 setup() {
-    CI_BUILD_ID=1234567890 \
-    TEST_REGISTRY_HOST=registry.binarysludge.com \
-      ${APP} build --pull=false \
+    CI_BUILD_ID=1234567890
+
+    ${APP} build --pull=false \
       --image-tag="${CI_BUILD_ID}" \
-      --registry-host="${TEST_REGISTRY_HOST}" \
+      --registry-host=registry.binarysludge.com \
       --registry-user=test-rollcage-user \
       --image-name='test-rollcage' \
       --build-path=test/fixture/simple/
@@ -20,9 +20,9 @@ teardown() {
 }
 
 @test "push: logs in automatically and pushes" {
-    CI_BUILD_ID=1234567890 \
-    TEST_REGISTRY_HOST=registry.binarysludge.com \
-      run_assert  ${APP} push \
+    CI_BUILD_ID=1234567890
+
+    run_assert ${APP} push \
       --image-tag="${CI_BUILD_ID}" \
       --registry-host=registry.binarysludge.com \
       --registry-user=test-rollcage-user \
