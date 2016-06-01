@@ -3,7 +3,8 @@
 load test_helper
 
 @test "push: rejects push without tag and image" {
-    run_refute  ${APP} push \
+    CI_BUILD_ID= \
+      run_refute  ${APP} push \
       --registry-host=registry.binarysludge.com \
       --registry-user=test-rollcage-user \
       --registry-pass='&B518isz0yaX!GYa$c2fnF'
@@ -11,9 +12,10 @@ load test_helper
     assert_output_contains '--image-tag or $CI_BUILD_ID env var required'
 }
 
-@test "push: rejects push without image" {
+@test "push: rejects push without tag" {
 
-    run_refute  ${APP} push \
+    CI_BUILD_ID= \
+      run_refute  ${APP} push \
       --registry-host=registry.binarysludge.com \
       --registry-user=test-rollcage-user \
       --image-name='test-rollcage' \
