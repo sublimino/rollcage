@@ -48,7 +48,7 @@ load test_helper
     assert_output_contains "toastimage:1234"
 }
 
-@test "get-tags: overriders image tag from env with that from arguments" {
+@test "get-tags: overrides image tag from env with that from arguments" {
     CI_BUILD_ID=7113 \
       run ${APP} get-tags \
       --image-name toast --image-tag=1234
@@ -56,7 +56,7 @@ load test_helper
     assert_output_contains "toast:1234"
 }
 
-@test "get-tags: overriders image user from env with that from arguments" {
+@test "get-tags: overrides image user from env with that from arguments" {
     IMAGE_USER=toastman \
       run ${APP} get-tags \
       --image-user toastlady --image-name toast --image-tag=1234
