@@ -246,3 +246,9 @@ rollcage deploy N
 rollcage revert
     [inverse deploy]
 
+# testing
+
+letsencrypt local cert
+nginx-proxy
+registry
+
