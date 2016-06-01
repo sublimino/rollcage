@@ -43,11 +43,18 @@ usage() {
   exit 2
 } 2>/dev/null
 
+info() {
+  set +o nounset
+  [ "$*" ] && MESSAGE="$*" || MESSAGE="OK"
+  logMessagePrefix
+  echo "${COLOUR_GREEN}${MESSAGE}${COLOUR_RESET}"
+}
+
 error() {
   set +o nounset
   [ "$@" ] && ERROR="$@" || ERROR="Unknown Error"
   logMessagePrefix
-  echo "${COLOUR_RED}${ERROR}${COLOUR_RESET}" && echo || echo
+  echo "${COLOUR_RED}${ERROR}${COLOUR_RESET}"
   exit 3
 } 1>&2
 
@@ -87,12 +94,6 @@ show_ok() {
   echo "$THIS_SCRIPT: $COLOUR_GREEN$MESSAGE$COLOUR_RESET"
 }
 
-info() {
-  set +o nounset
-  [ "$*" ] && MESSAGE="$*" || MESSAGE="OK"
-  tput bold 2>/dev/null
-  echo "$THIS_SCRIPT: $COLOUR_GREEN$MESSAGE$COLOUR_RESET"
-}
 
 check_number_of_expected_arguments() {
   [[ $EXPECTED_NUM_ARGUMENTS != ${#ARGUMENTS[@]} ]] && {

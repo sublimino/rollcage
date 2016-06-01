@@ -174,7 +174,9 @@ perform_get-tags() {
   local IMAGE_NAME="${IMAGE_NAME:-$(basename "$(pwd)")}"
   local IMAGE_TAG="${IMAGE_TAG:-${CI_BUILD_ID:-}}"
 
-  [[ -z "${IMAGE_TAG}" ]] && error '--tag or $CI_BUILD_ID env var required'
+  [[ -z "${IMAGE_TAG}" ]] && {
+    IMAGE_TAG="dev"
+  }
 
   [[ -n "${REGISTRY_HOST}" ]] && REGISTRY_HOST="${REGISTRY_HOST}/"
   [[ -n "${IMAGE_USER}" ]] && IMAGE_USER="${IMAGE_USER}/"
@@ -205,9 +207,15 @@ perform_build() {
   local BUILD_PATH=${BUILD_PATH:-.}
   local DOCKERFILE_NAME=${DOCKERFILE_NAME:-"${BUILD_PATH}/Dockerfile"}
 
+  local TAG=$(perform_get-tags)
+  [[ -z "${TAG}" ]] && exit 3
+
+  local DOCKERFILE_OPTION=
+  [[ "${DOCKERFILE_NAME}" != "./Dockerfile" ]] && DOCKERFILE_OPTION="--file=${DOCKERFILE_NAME}"
+
   local COMMAND="docker build --pull=${BUILD_PULL} \
-    --tag "$(perform_get-tags)" \
-    --file="${DOCKERFILE_NAME}" \
+    --tag "${TAG}" \
+    ${DOCKERFILE_OPTION} \
     "${BUILD_PATH}""
 
   info ${COMMAND}
@@ -219,6 +227,7 @@ perform_push() {
   local FULL_IMAGE_NAME=${FULL_IMAGE_NAME:-}
 
   [[ -z "${FULL_IMAGE_NAME}" ]] && FULL_IMAGE_NAME=$(perform_get-tags)
+  [[ -z "${FULL_IMAGE_NAME}" ]] && exit 3
 
   local COMMAND="docker push ${FULL_IMAGE_NAME}"
 

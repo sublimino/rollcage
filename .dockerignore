@@ -1,0 +1,12 @@
+# this file uses slightly different syntax than .gitignore,
+# e.g. ".git/" will not ignore .git directory
+
+# well, official docker build should be done on clean git checkout
+# anyway, so .git should be empty... But I'm sure people will try to
+# test docker on their git working directories.
+
+.git
+.idea
+.dockerignore
+.gitlab-ci.yml
+rollcage.jpg

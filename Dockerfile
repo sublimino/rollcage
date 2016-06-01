@@ -1,3 +1,8 @@
-FROM busybox
+FROM mhart/alpine-node:latest
 
-CMD bash -c "while :; do echo version 1; sleep 3; done"
+WORKDIR /src
+ADD . .
+
+RUN npm install
+
+ENTRYPOINT ["./rollcage"]
