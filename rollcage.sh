@@ -200,7 +200,7 @@ perform_push() {
 
   local COMMAND="docker push ${PUSH_IMAGE}"
 
-  echo ${COMMAND}
+  info "Pushing image: ${PUSH_IMAGE}"
 
   ${COMMAND} || { perform_login && ${COMMAND}; }
 }

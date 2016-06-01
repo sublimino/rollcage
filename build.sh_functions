@@ -87,6 +87,13 @@ show_ok() {
   echo "$THIS_SCRIPT: $COLOUR_GREEN$MESSAGE$COLOUR_RESET"
 }
 
+info() {
+  set +o nounset
+  [ "$*" ] && MESSAGE="$*" || MESSAGE="OK"
+  tput bold 2>/dev/null
+  echo "$THIS_SCRIPT: $COLOUR_GREEN$MESSAGE$COLOUR_RESET"
+}
+
 check_number_of_expected_arguments() {
   [[ $EXPECTED_NUM_ARGUMENTS != ${#ARGUMENTS[@]} ]] && {
     ARGUMENTS_STRING="argument"
