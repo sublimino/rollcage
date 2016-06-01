@@ -3,9 +3,10 @@
 load test_helper
 
 setup() {
-    CI_BUILD_ID=foreign-test
 
-    ${APP} build --pull=false \
+    env -i \
+      CI_BUILD_ID=foreign-test \
+      ${APP} build --pull=false \
       --image-user='sublimino' \
       --image-name='test-rollcage-other-user' \
       --image-tag="${CI_BUILD_ID}" \

@@ -35,16 +35,16 @@ load test_helper
 }
 
 @test "build: rejects tag-less build" {
-    IMAGE_TAG= \
-    CI_BUILD_ID= \
-      run_refute  ${APP} build --pull=false \
+    run_refute env -i \
+      ${APP} build --pull=false \
       --build-path=test/fixture/simple/
     assert_output_contains '--image-tag or $CI_BUILD_ID env var required'
 }
 
 @test "build: accepts tag from environment" {
-    IMAGE_TAG=123 \
-      run_assert  ${APP} build --pull=false \
+    run_assert env -i \
+      IMAGE_TAG=123 \
+      ${APP} build --pull=false \
       --build-path=test/fixture/simple/
     assert_output_contains "CMD echo \"SIMPLE DOCKERFILE\""
 }

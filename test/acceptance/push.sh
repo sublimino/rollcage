@@ -3,8 +3,8 @@
 load test_helper
 
 @test "push: rejects push without tag and image" {
-    CI_BUILD_ID= \
-      run_refute  ${APP} push \
+    run_refute env -i \
+      ${APP} push \
       --registry-host=registry.binarysludge.com \
       --registry-user=test-rollcage-user \
       --registry-pass='&B518isz0yaX!GYa$c2fnF'
@@ -13,9 +13,8 @@ load test_helper
 }
 
 @test "push: rejects push without tag" {
-
-    CI_BUILD_ID= \
-      run_refute  ${APP} push \
+    run_refute env -i \
+      ${APP} push \
       --registry-host=registry.binarysludge.com \
       --registry-user=test-rollcage-user \
       --image-name='test-rollcage' \
@@ -25,8 +24,8 @@ load test_helper
 }
 
 @test "push: accepts push with tag and image" {
-
-    run_refute  ${APP} push \
+    run_refute env -i \
+      ${APP} push \
       --registry-host=registry.binarysludge.com \
       --registry-user=test-rollcage-user \
       --image-name='test-rollcage' \
