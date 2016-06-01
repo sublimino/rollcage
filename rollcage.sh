@@ -8,25 +8,26 @@
 ## Usage: %SCRIPT_NAME% [options] [action]
 ##
 ## Commands:
-##  get-tags              Get auto-generated tags
-##    --image=name        Image name [optional, default current directory name]
-##    --tag=name          Image tag [optional, default from env vars]]
-##    --user=name         Registry image owner [optional]
-##    --registry=host     Registry host [optional]
-##  login                 Login to a registry
-##    --password pass     Registry password
-##    --registry-user user   Registry login user if different from --user [optional]
-##  build                 Build Dockerfile
-##    --pull=true         Pull a newer version of base image  [optional, default true]
-##    --build-path=path   Set build context [optional, default is current directory]
-##  push                  Push an image}
-##    --push-image        Image to push [option, default from env vars]
+##   get-tags                 Get auto-generated tags
+##     --image=name           Image name [optional, default current directory name]
+##     --tag=name             Image tag [optional, default from env vars]]
+##     --user=name            Registry image owner [optional]
+##     --registry=host        Registry host [optional]
+##   login                    Login to a registry
+##     --password pass        Registry password
+##     --registry-user user   Registry login user if different from --user [optional]
+##   build                    Build Dockerfile
+##     --pull=true            Pull a newer version of base image  [optional, default true]
+##     --build-path=path      Set build context [optional, default is current directory]
+##   push                     Push an image}
+##    --push-image            Image to push [option, default from env vars]
 ##
 ## Options:
-##   -h, --help           Display this message
-##   -v, --version        Print version
-##   -t, --type [bash]    Template type to create
-##   -n                   Dry-run; only show what would be done
+##   --config=file            Configuration file
+##   -h, --help               Display this message
+##   -v, --version            Print version
+##   -t, --type [bash]        Template type to create
+##   -n                       Dry-run; only show what would be done
 ##
 
 # helper functions
@@ -34,6 +35,7 @@ declare -r DIR=$(cd "$(dirname "$0")" && pwd)
 source "$DIR"/build.sh_functions
 
 # user defaults
+CONFIG_FILE=${CONFIG_FILE:-.rollcage}
 DEBUG=0
 DRY_RUN=0
 
@@ -70,6 +72,21 @@ handle_arguments() {
   [[ $# = 0 && $EXPECTED_NUM_ARGUMENTS -gt 0 ]] && usage
 
   parse_arguments "$@"
+
+  [[ -n ${CONFIG_FILE:-} && -f ${CONFIG_FILE} ]] && {
+    local ARGS_FROM_FILE=
+    local PREVIOUS_ARGUMENTS="$@"
+    local SPLIT_ARG
+    while read LINE; do
+      LINE="--${LINE}"
+      IFS='=' read -ra SPLIT_ARG <<< "${LINE}"
+      if ! grep -q -- "${SPLIT_ARG[0]}" <<< "${PREVIOUS_ARGUMENTS}" >/dev/null; then
+        set -- "${LINE}"
+        parse_arguments "$@"
+      fi
+    done < <(cat ${CONFIG_FILE})
+  }
+
   validate_arguments "$@"
 }
 
@@ -77,8 +94,11 @@ function parse_arguments() {
   local CURRENT_ARG
   local NEXT_ARG
   local SPLIT_ARG
+  local COUNT=
   while [ $# -gt 0 ]; do
     CURRENT_ARG="${1}"
+    COUNT=$((COUNT + 1))
+    [[ $COUNT -gt 20 ]] && error "Too many arguments or '"${CURRENT_ARG}"' is unknown"
     IFS='=' read -ra SPLIT_ARG <<< "${CURRENT_ARG}"
     if [[ ${#SPLIT_ARG[@]} -gt 1 ]]; then
       CURRENT_ARG="${SPLIT_ARG[0]}"
@@ -108,6 +128,7 @@ function parse_arguments() {
       (push) ACTION=${CURRENT_ARG};;
       (--push-image) not_empty_or_usage "${NEXT_ARG:-}"; FULL_IMAGE_NAME="${NEXT_ARG}"; shift;;
 
+      (--config-file) not_empty_or_usage "${NEXT_ARG:-}"; CONFIG_FILE="${NEXT_ARG}"; shift;;
       (-n) DRY_RUN=1;;
       (-h|--help) usage;;
       (-v|--version) get_version; exit 0;;
@@ -174,7 +195,7 @@ perform_login() {
     --password "${REGISTRY_PASS}" \
     "${REGISTRY_HOST}""
 
-  echo ${COMMAND}
+  info ${COMMAND}
 
   ${COMMAND}
 }
@@ -189,7 +210,7 @@ perform_build() {
     --file="${DOCKERFILE_NAME}" \
     "${BUILD_PATH}""
 
-  echo ${COMMAND}
+  info ${COMMAND}
 
   ${COMMAND}
 }
@@ -201,7 +222,7 @@ perform_push() {
 
   local COMMAND="docker push ${FULL_IMAGE_NAME}"
 
-  info "Pushing image: ${FULL_IMAGE_NAME}"
+  info ${COMMAND}
 
   ${COMMAND} || { perform_login && ${COMMAND}; }
 }
