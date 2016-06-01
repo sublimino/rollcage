@@ -4,10 +4,11 @@ load test_helper
 
 @test "file: reads config file" {
     run env -i \
-      ${APP} --config-file=.rollcage \
-      get-tags --image=toast --tag=1234
+      ${APP} --config-file=test/fixture/simple/.rollcage \
+      get-tags \
+      --image=toast --tag=1234
 
-    assert_output_contains "registry.binarysludge.com/sublimino/toast:1234"
+    assert_output_contains "somewhere.internet.like/herbert/toast:1234"
 }
 
 @test "file: ignores missing config file" {

@@ -9,10 +9,17 @@ load test_helper
     | \xargs --no-run-if-empty docker rmi --force
 }
 
-
 @test "build: accepts --pull arg" {
-    run ${APP} build --pull=true --tag=123
-    assert_output_contains "latest: Pulling from"
+    run ${APP} \
+      build --pull=true --tag=123 \
+      --build-path=test/fixture/simple/
+    assert_output_contains "--pull=true"
+}
+
+@test "build: accepts --pull=false arg" {
+    run ${APP} build --pull=false --tag=123 \
+      --build-path=test/fixture/simple/
+    refute_output_contains "latest: Pulling from"
 }
 
 @test "build: rejects empty --pull arg" {
@@ -23,22 +30,17 @@ load test_helper
     run_refute  ${APP} build --pull --version
 }
 
-@test "build: accepts --pull=false arg" {
-    run ${APP} build --pull=false --tag=123
-    refute_output_contains "latest: Pulling from"
+@test "build: tags as ':dev' when no tags found" {
+    run_assert env -i \
+      ${APP} build --pull=false \
+      --build-path=test/fixture/simple/
+    assert_output_contains '--tag rollcage:dev'
 }
 
 @test "build: accepts Dockerfile path" {
     run ${APP} build --pull=false --tag=123 \
       --build-path=test/fixture/simple/
     assert_output_contains "CMD echo \"SIMPLE DOCKERFILE\""
-}
-
-@test "build: rejects tag-less build" {
-    run_refute env -i \
-      ${APP} build --pull=false \
-      --build-path=test/fixture/simple/
-    assert_output_contains '--tag or $CI_BUILD_ID env var required'
 }
 
 @test "build: accepts tag from environment" {
