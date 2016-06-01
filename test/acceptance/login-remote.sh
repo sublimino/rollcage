@@ -3,7 +3,7 @@
 load test_helper
 
 @test "login: accepts --registry-pass arg" {
-    run_refute  ${APP} --debug login --registry-user=123 --registry-pass=123
+    run_refute  ${APP} login --registry-user=123 --registry-pass=123
     assert_output_contains "unauthorized: incorrect username or password"
 }
 
