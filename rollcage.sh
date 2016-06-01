@@ -8,24 +8,25 @@
 ## Usage: %SCRIPT_NAME% [options] [action]
 ##
 ## Commands:
-##  get-tags            Get auto-generated tags
-##    --image-name=a    Image name [optional, default current directory name]
-##    --image-tag=b     Image tag [optional, default from env vars]]
-##    --registry-host=c Registry host [optional]
-##    --registry-user=d Registry user [optional]
-##  login               Login to a registry
-##    --registry-pass=e Registry password for user in --registry-user [optional]
-##  build               Build Dockerfile
-##    --pull=true       Pull a newer version of base image  [optional, default true]
-##    --build-path=x/y  Set build context [optional, default is current directory]
-##  push                Push an image}
-##    --push-image      Image to push [option, default from env vars]
+##  get-tags              Get auto-generated tags
+##    --image-name=a      Image name [optional, default current directory name]
+##    --image-tag=b       Image tag [optional, default from env vars]]
+##    --image-user=c      Registry image owner [optional]
+##    --registry-host=d   Registry host [optional]
+##  login                 Login to a registry
+##    --registry-pass=e   Registry password for user in --registry-user [optional]
+##    --registry-user=f   Registry login user [optional]
+##  build                 Build Dockerfile
+##    --pull=true         Pull a newer version of base image  [optional, default true]
+##    --build-path=x/y    Set build context [optional, default is current directory]
+##  push                  Push an image}
+##    --push-image        Image to push [option, default from env vars]
 ##
 ## Options:
-##   -h, --help         Display this message
-##   -v, --version      Print version
-##   -t, --type [bash]  Template type to create
-##   -n                 Dry-run; only show what would be done
+##   -h, --help           Display this message
+##   -v, --version        Print version
+##   -t, --type [bash]    Template type to create
+##   -n                   Dry-run; only show what would be done
 ##
 
 # helper functions
@@ -33,7 +34,6 @@ declare -r DIR=$(cd "$(dirname "$0")" && pwd)
 source "$DIR"/build.sh_functions
 
 # user defaults
-DESCRIPTION="Unknown"
 DEBUG=0
 DRY_RUN=0
 
@@ -44,7 +44,8 @@ FILENAME=''
 ACTION=''
 
 # get-tags
-IMAGE_NAME=
+IMAGE_USER="${IMAGE_USER:-}"
+IMAGE_NAME="${IMAGE_NAME:-}"
 IMAGE_TAG="${IMAGE_TAG:-}"
 REGISTRY_HOST="${REGISTRY_HOST:=}"
 REGISTRY_USER="${REGISTRY_USER:-}"
@@ -92,6 +93,7 @@ function parse_arguments() {
 
     case ${CURRENT_ARG} in
       (get-tags) ACTION=${CURRENT_ARG};;
+      (--image-user) not_empty_or_usage "${NEXT_ARG:-}"; IMAGE_USER="${NEXT_ARG}"; shift;;
       (--image-name) not_empty_or_usage "${NEXT_ARG:-}"; IMAGE_NAME="${NEXT_ARG}"; shift;;
       (--image-tag) not_empty_or_usage "${NEXT_ARG:-}"; IMAGE_TAG="${NEXT_ARG}"; shift;;
       (--registry-host) not_empty_or_usage "${NEXT_ARG:-}"; REGISTRY_HOST="${NEXT_ARG}"; shift;;
@@ -146,15 +148,16 @@ main() {
 perform_get-tags() {
   local REGISTRY_HOST="${REGISTRY_HOST:-}"
   local REGISTRY_USER="${REGISTRY_USER:-}"
+  local IMAGE_USER="${IMAGE_USER:-${REGISTRY_USER:-}}"
   local IMAGE_NAME="${IMAGE_NAME:-$(basename "$(pwd)")}"
   local IMAGE_TAG="${IMAGE_TAG:-${CI_BUILD_ID:-}}"
 
   [[ -z "${IMAGE_TAG}" ]] && error '--image-tag or $CI_BUILD_ID env var required'
 
   [[ -n "${REGISTRY_HOST}" ]] && REGISTRY_HOST="${REGISTRY_HOST}/"
-  [[ -n "${REGISTRY_USER}" ]] && REGISTRY_USER="${REGISTRY_USER}/"
+  [[ -n "${IMAGE_USER}" ]] && IMAGE_USER="${IMAGE_USER}/"
 
-  echo "${REGISTRY_HOST}${REGISTRY_USER}${IMAGE_NAME}:${IMAGE_TAG}"
+  echo "${REGISTRY_HOST}${IMAGE_USER}${IMAGE_NAME}:${IMAGE_TAG}"
 }
 
 perform_login() {
@@ -199,7 +202,7 @@ perform_push() {
 
   echo ${COMMAND}
 
-  ${COMMAND} || perform_login && ${COMMAND}
+  ${COMMAND} || { perform_login && ${COMMAND}; }
 }
 
 get_version() {

@@ -20,16 +20,48 @@ load test_helper
     assert_output_contains "toast:1234"
 }
 
-@test "get-tags: gets image tag from arguments" {
+@test "get-tags: gets image user from arguments" {
+    run ${APP} get-tags --image-user=toastman --image-name=toast --image-tag=1234
+
+    assert_output_contains "toastman/toast:1234"
+}
+
+@test "get-tags: gets image tag from arguments and tag from env" {
     CI_BUILD_ID=7113 run ${APP} get-tags --image-name toast
 
     assert_output_contains "toast:7113"
 }
 
+@test "get-tags: get image user from env" {
+    IMAGE_USER=toastman \
+      run ${APP} get-tags \
+      --image-name toast --image-tag=1234
+
+    assert_output_contains "toastman/toast:1234"
+}
+
+@test "get-tags: get image name from env" {
+    IMAGE_NAME=toastimage \
+      run ${APP} get-tags \
+      --image-tag=1234
+
+    assert_output_contains "toastimage:1234"
+}
+
 @test "get-tags: overriders image tag from env with that from arguments" {
-    CI_BUILD_ID=7113 run ${APP} get-tags --image-name toast --image-tag=1234
+    CI_BUILD_ID=7113 \
+      run ${APP} get-tags \
+      --image-name toast --image-tag=1234
 
     assert_output_contains "toast:1234"
+}
+
+@test "get-tags: overriders image user from env with that from arguments" {
+    IMAGE_USER=toastman \
+      run ${APP} get-tags \
+      --image-user toastlady --image-name toast --image-tag=1234
+
+    assert_output_contains "toastlady/toast:1234"
 }
 
 @test "get-tags: gets full image name from arguments" {
