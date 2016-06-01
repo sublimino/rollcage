@@ -2,6 +2,14 @@
 
 load test_helper
 
+@test "pre-run: deletes images" {
+  run_assert docker images -a  \
+    | grep registry.binarysludge.com/test-rollcage-user/test-rollcage \
+    | awk '{print $3}' \
+    | \xargs --no-run-if-empty docker rmi --force
+}
+
+
 @test "build: accepts --pull arg" {
     run ${APP} build --pull=true --image-tag=123
     assert_output_contains "latest: Pulling from"

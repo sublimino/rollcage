@@ -191,7 +191,9 @@ perform_build() {
 }
 
 perform_push() {
-  local PUSH_IMAGE=${PUSH_IMAGE:-$(perform_get-tags)}
+  local PUSH_IMAGE=${PUSH_IMAGE:-}
+
+  [[ -z "${PUSH_IMAGE}" ]] && PUSH_IMAGE=$(perform_get-tags)
 
   local COMMAND="docker push ${PUSH_IMAGE}"
 
