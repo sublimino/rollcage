@@ -11,7 +11,7 @@ load test_helper
 
 
 @test "build: accepts --pull arg" {
-    run ${APP} build --pull=true --image-tag=123
+    run ${APP} build --pull=true --tag=123
     assert_output_contains "latest: Pulling from"
 }
 
@@ -24,12 +24,12 @@ load test_helper
 }
 
 @test "build: accepts --pull=false arg" {
-    run ${APP} build --pull=false --image-tag=123
+    run ${APP} build --pull=false --tag=123
     refute_output_contains "latest: Pulling from"
 }
 
 @test "build: accepts Dockerfile path" {
-    run ${APP} build --pull=false --image-tag=123 \
+    run ${APP} build --pull=false --tag=123 \
       --build-path=test/fixture/simple/
     assert_output_contains "CMD echo \"SIMPLE DOCKERFILE\""
 }
@@ -38,7 +38,7 @@ load test_helper
     run_refute env -i \
       ${APP} build --pull=false \
       --build-path=test/fixture/simple/
-    assert_output_contains '--image-tag or $CI_BUILD_ID env var required'
+    assert_output_contains '--tag or $CI_BUILD_ID env var required'
 }
 
 @test "build: accepts tag from environment" {

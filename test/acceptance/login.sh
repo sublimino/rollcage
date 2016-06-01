@@ -8,9 +8,9 @@ load test_helper
     refute_output_contains "Action required"
 }
 
-@test "login: rejects empty --registry-pass arg" {
+@test "login: rejects empty --password arg" {
     run_refute env -i \
-      ${APP} login --registry-pass
+      ${APP} login --password
     assert_output_contains "Non-empty value required"
 }
 
@@ -20,9 +20,9 @@ load test_helper
     assert_output_contains "--registry-user required for login"
 }
 
-@test "login: rejects without --registry-pass arg" {
+@test "login: rejects without --password arg" {
     run_refute  env -i \
       ${APP} login --registry-user=123
-    assert_output_contains "--registry-pass required for login"
+    assert_output_contains "--password required for login"
 }
 

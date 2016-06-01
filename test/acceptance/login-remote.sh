@@ -2,18 +2,18 @@
 
 load test_helper
 
-@test "login: accepts --registry-pass arg" {
+@test "login: accepts --password arg" {
     run_refute env -i \
-      ${APP} login --registry-user=123 --registry-pass=123
+      ${APP} login --registry-user=123 --password=123
     assert_output_contains "unauthorized: incorrect username or password"
 }
 
 @test "login: succeeds with valid credentials" {
     run_assert env -i \
       ${APP} login \
-      --registry-host=registry.binarysludge.com \
+      --registry=registry.binarysludge.com \
       --registry-user=test-rollcage-user \
-      --registry-pass='&B518isz0yaX!GYa$c2fnF'
+      --password='&B518isz0yaX!GYa$c2fnF'
     assert_output_contains "Login Succeeded"
 }
 
@@ -21,8 +21,8 @@ load test_helper
     run_assert env -i \
       REGISTRY_USER='test-rollcage-user' \
       ${APP} login \
-      --registry-host=registry.binarysludge.com \
-      --registry-pass='&B518isz0yaX!GYa$c2fnF'
+      --registry=registry.binarysludge.com \
+      --password='&B518isz0yaX!GYa$c2fnF'
     assert_output_contains "Login Succeeded"
 }
 
@@ -30,7 +30,7 @@ load test_helper
     run_assert env -i \
       REGISTRY_PASS='&B518isz0yaX!GYa$c2fnF' \
       ${APP} login \
-      --registry-host=registry.binarysludge.com \
+      --registry=registry.binarysludge.com \
       --registry-user=test-rollcage-user
     assert_output_contains "Login Succeeded"
 }
@@ -40,7 +40,7 @@ load test_helper
       REGISTRY_HOST='registry.binarysludge.com' \
       ${APP} login \
       --registry-user=test-rollcage-user \
-      --registry-pass='&B518isz0yaX!GYa$c2fnF'
+      --password='&B518isz0yaX!GYa$c2fnF'
     assert_output_contains "Login Succeeded"
 }
 
@@ -50,8 +50,8 @@ load test_helper
       REGISTRY_PASS='wrong-pass' \
       REGISTRY_HOST='wrong-registry.binarysludge.com' \
       ${APP} login \
-      --registry-host=registry.binarysludge.com \
+      --registry=registry.binarysludge.com \
       --registry-user=test-rollcage-user \
-      --registry-pass='&B518isz0yaX!GYa$c2fnF'
+      --password='&B518isz0yaX!GYa$c2fnF'
     assert_output_contains "Login Succeeded"
 }

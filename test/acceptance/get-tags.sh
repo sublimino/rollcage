@@ -15,19 +15,19 @@ load test_helper
 }
 
 @test "get-tags: gets image name from arguments" {
-    run ${APP} get-tags --image-name=toast --image-tag=1234
+    run ${APP} get-tags --image=toast --tag=1234
 
     assert_output_contains "toast:1234"
 }
 
 @test "get-tags: gets image user from arguments" {
-    run ${APP} get-tags --image-user=toastman --image-name=toast --image-tag=1234
+    run ${APP} get-tags --user=toastman --image=toast --tag=1234
 
     assert_output_contains "toastman/toast:1234"
 }
 
 @test "get-tags: gets image tag from arguments and tag from env" {
-    CI_BUILD_ID=7113 run ${APP} get-tags --image-name toast
+    CI_BUILD_ID=7113 run ${APP} get-tags --image toast
 
     assert_output_contains "toast:7113"
 }
@@ -35,7 +35,7 @@ load test_helper
 @test "get-tags: get image user from env" {
     IMAGE_USER=toastman \
       run ${APP} get-tags \
-      --image-name toast --image-tag=1234
+      --image toast --tag=1234
 
     assert_output_contains "toastman/toast:1234"
 }
@@ -43,7 +43,7 @@ load test_helper
 @test "get-tags: get image name from env" {
     IMAGE_NAME=toastimage \
       run ${APP} get-tags \
-      --image-tag=1234
+      --tag=1234
 
     assert_output_contains "toastimage:1234"
 }
@@ -51,7 +51,7 @@ load test_helper
 @test "get-tags: overrides image tag from env with that from arguments" {
     CI_BUILD_ID=7113 \
       run ${APP} get-tags \
-      --image-name toast --image-tag=1234
+      --image toast --tag=1234
 
     assert_output_contains "toast:1234"
 }
@@ -59,17 +59,17 @@ load test_helper
 @test "get-tags: overrides image user from env with that from arguments" {
     IMAGE_USER=toastman \
       run ${APP} get-tags \
-      --image-user toastlady --image-name toast --image-tag=1234
+      --user toastlady --image toast --tag=1234
 
     assert_output_contains "toastlady/toast:1234"
 }
 
 @test "get-tags: gets full image name from arguments" {
     run ${APP} get-tags \
-      --registry-host=quay.io \
+      --registry=quay.io \
       --registry-user=sublimino \
-      --image-name=toast \
-      --image-tag=1234
+      --image=toast \
+      --tag=1234
 
     assert_output_contains "quay.io/sublimino/toast:1234"
 }
