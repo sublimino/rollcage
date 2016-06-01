@@ -17,10 +17,11 @@
 ##     --password pass        Registry password
 ##     --registry-user user   Registry login user if different from --user [optional]
 ##   build                    Build Dockerfile
-##     --pull=true            Pull a newer version of base image  [optional, default true]
+##     --pull=true            Pull a newer version of base image  [default true]
 ##     --build-path=path      Set build context [optional, default is current directory]
-##   push                     Push an image}
-##    --push-image            Image to push [option, default from env vars]
+##     --test=command         Run tests in container [optional]
+##   push                     Push an image
+##     --push-image           Image to push [option, default from env vars]
 ##
 ## Options:
 ##   --config=file            Configuration file
@@ -121,6 +122,7 @@ function parse_arguments() {
       (build) ACTION=${CURRENT_ARG};;
       (--pull) not_empty_or_usage "${NEXT_ARG:-}"; [[ "${NEXT_ARG:-}" == 'false' ]] && BUILD_PULL=false || BUILD_PULL=true; shift;;
       (--build-path) not_empty_or_usage "${NEXT_ARG:-}"; BUILD_PATH="${NEXT_ARG}"; shift;;
+      (--test) not_empty_or_usage "${NEXT_ARG:-}"; TEST_COMMAND="${NEXT_ARG}"; shift;;
 
       (login) ACTION=${CURRENT_ARG};;
       (--password) not_empty_or_usage "${NEXT_ARG:-}"; REGISTRY_PASS="${NEXT_ARG}"; shift;;
@@ -220,7 +222,9 @@ perform_build() {
 
   info ${COMMAND}
 
-  ${COMMAND}
+  local TEST_COMMAND="docker run -t "${TAG}" ${TEST_COMMAND}"
+
+  ${COMMAND} && { info "${TEST_COMMAND}"; ${TEST_COMMAND}; }
 }
 
 perform_push() {

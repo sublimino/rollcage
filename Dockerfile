@@ -4,8 +4,10 @@ WORKDIR /src
 
 RUN apk --update add git
 
-ADD . .
+ADD node_modules/ ./node_modules/
+ADD test/ ./test/
+ADD rollcage .rollcage package.json build.sh_functions ./
 
 RUN npm install
 
-ENTRYPOINT ["./rollcage"]
+CMD ["./rollcage"]
