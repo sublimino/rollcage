@@ -2,7 +2,10 @@
   "name": "rollcage",
   "version": "0.0.1",
   "description": "Continuous Deployment Helper",
-  "main": "index.js",
+  "main": "rollcage",
+  "bin": {
+    "rollcage": "rollcage.sh"
+  },
   "scripts": {
     "test": "npm-run-all --parallel test:*",
     "test:acceptance": "_f() { bats test/acceptance/${1:-*}.sh; }; _f"

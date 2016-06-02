@@ -16,7 +16,7 @@ set -o noclobber
 
 # declarations
 [[ "${DIR}" ]] || declare -r DIR="$(cd "$(dirname "$0")" && pwd)"
-THIS_SCRIPT="${DIR}"/$(basename "$0")
+THIS_SCRIPT=${SELF_PATH:-"${DIR}"/$(basename "$0")}
 declare -a ARGUMENTS;
 
 
@@ -35,7 +35,10 @@ export COLOUR_RESET=$(tput sgr0 2>/dev/null :-"")
 
 # helper functions
 usage() {
-  [ "$*" ] && printf "${THIS_SCRIPT}: $*\n\n"
+  set +o nounset
+  [ "$*" ] && MESSAGE="$*" || MESSAGE=""
+  logMessagePrefix
+  printf "${COLOUR_RED}${MESSAGE}${COLOUR_RESET}\n\n"
 
   sed -n '/^##/,/^$/s/^## \{0,1\}//p' "${THIS_SCRIPT}" \
     | sed "s/%SCRIPT_NAME%/$(basename "${THIS_SCRIPT}")/g"
@@ -45,9 +48,9 @@ usage() {
 
 info() {
   set +o nounset
-  [ "$*" ] && MESSAGE="$*" || MESSAGE="OK"
+  [ "$*" ] && INFO="$*" || INFO="OK"
   logMessagePrefix
-  echo "${COLOUR_GREEN}${MESSAGE}${COLOUR_RESET}"
+  echo "${COLOUR_GREEN}${INFO}${COLOUR_RESET}"
 }
 
 error() {
@@ -60,24 +63,17 @@ error() {
 
 warning() {
   set +o nounset
-  [ "$*" ] && ERROR="$*" || ERROR="Unknown Warning"
+  [ "$*" ] && WARNING="$*" || WARNING="Unknown Warning"
   logMessagePrefix
-  echo "${COLOUR_RED}${ERROR}${COLOUR_RESET}"
-} 1>&2
-
-warning() {
-  set +o nounset
-  [ "$*" ] && ERROR="$*" || ERROR="Unknown Warning"
-  logMessagePrefix
-  echo "${COLOUR_RED}${ERROR}${COLOUR_RESET}"
+  echo "${COLOUR_RED}${WARNING}${COLOUR_RESET}"
 } 1>&2
 
 debug() {
   if [ "$DEBUG" == "0" ]; then return 0; fi
   set +o nounset
-  [ "$*" ] && ERROR="$*" || ERROR="Unknown Debug Message"
+  [ "$*" ] && MESSAGE="$*" || MESSAGE="Unknown Debug Message"
   logMessagePrefix
-  echo "${COLOUR_RED}${ERROR}${COLOUR_RESET}"
+  echo "${COLOUR_RED}${MESSAGE}${COLOUR_RESET}"
 } 1>&2
 
 logMessagePrefix() {

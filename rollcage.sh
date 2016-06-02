@@ -8,31 +8,43 @@
 ## Usage: %SCRIPT_NAME% [options] [action]
 ##
 ## Commands:
-##   get-tags                 Get auto-generated tags
-##     --image=name           Image name [optional, default current directory name]
-##     --tag=name             Image tag [optional, default from env vars]]
-##     --user=name            Registry image owner [optional]
-##     --registry=host        Registry host [optional]
-##   login                    Login to a registry
-##     --password pass        Registry password
-##     --registry-user user   Registry login user if different from --user [optional]
 ##   build                    Build Dockerfile
 ##     --pull=true            Pull a newer version of base image  [default true]
 ##     --build-path=path      Set build context [optional, default is current directory]
 ##     --test=command         Run tests in container [optional]
 ##   push                     Push an image
 ##     --push-image           Image to push [option, default from env vars]
+##   login                    Login to a registry
+##     --password pass        Registry password
+##     --registry-user user   Registry login user if different from --user [optional]
+##   get-tags                 Get auto-generated tags
+##     --image=name           Image name [optional, default current directory name]
+##     --tag=name             Image tag [optional, default from env vars]]
+##     --user=name            Registry image owner [optional]
+##     --registry=host        Registry host [optional]
 ##
 ## Options:
 ##   --config=file            Configuration file
 ##   -h, --help               Display this message
 ##   -v, --version            Print version
-##   -t, --type [bash]        Template type to create
-##   -n                       Dry-run; only show what would be done
 ##
 
 # helper functions
-declare -r DIR=$(cd "$(dirname "$0")" && pwd)
+
+# get the absolute path of the executable
+SELF_PATH=$(cd -P -- "$(dirname -- "$0")" && pwd -P) && SELF_PATH=$SELF_PATH/$(basename -- "$0")
+
+# resolve symlinks
+while [ -h $SELF_PATH ]; do
+    # 1) cd to directory of the symlink
+    # 2) cd to the directory of where the symlink points
+    # 3) get the pwd
+    # 4) append the basename
+    DIR=$(dirname -- "$SELF_PATH")
+    SYM=$(readlink $SELF_PATH)
+    SELF_PATH=$(cd $DIR && cd $(dirname -- "$SYM") && pwd)/$(basename -- "$SYM")
+done
+declare -r DIR="$(dirname "${SELF_PATH}")"
 source "$DIR"/build.sh_functions
 
 # user defaults
@@ -132,15 +144,9 @@ function parse_arguments() {
       (--push-image) not_empty_or_usage "${NEXT_ARG:-}"; FULL_IMAGE_NAME="${NEXT_ARG}"; shift;;
 
       (--config-file) not_empty_or_usage "${NEXT_ARG:-}"; CONFIG_FILE="${NEXT_ARG}"; shift;;
-      (-n) DRY_RUN=1;;
       (-h|--help) usage;;
       (-v|--version) get_version; exit 0;;
       (--debug) DEBUG=1; set -xe;;
-      (-t|--type) not_empty_or_usage "${NEXT_ARG:-}"; case ${NEXT_ARG} in
-          (bash) FILETYPE=bash; shift;;
-          (*) usage "Template type '${NEXT_ARG}' not recognised";;
-        esac;;
-      (-d|--description) not_empty_or_usage "${NEXT_ARG:-}"; DESCRIPTION="${NEXT_ARG}"; shift;;
       (--) break;;
       (-*) usage "${CURRENT_ARG}: unknown option";;
       (*) ARGUMENTS+=("${CURRENT_ARG}");
