@@ -197,10 +197,10 @@ perform_login() {
 
   local COMMAND="docker login \
     --username=${REGISTRY_USER} \
-    --password "${REGISTRY_PASS}" \
+    --password="${REGISTRY_PASS}" \
     "${REGISTRY_HOST}""
 
-  info ${COMMAND}
+  info ${COMMAND/${REGISTRY_PASS}/########}
 
   ${COMMAND}
 }
@@ -248,7 +248,7 @@ perform_push() {
 
   info ${COMMAND}
 
-  ${COMMAND} || { perform_login && ${COMMAND}; }
+  ${COMMAND} || { (error "Push failed") || true; perform_login && ${COMMAND}; }
 }
 
 get_version() {
