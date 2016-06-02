@@ -1,13 +1,3 @@
-FROM mhart/alpine-node:latest
+FROM sublimino/alpine-base
 
-WORKDIR /src
-
-RUN apk --update add git
-
-ADD node_modules/ ./node_modules/
-ADD test/ ./test/
-ADD rollcage .rollcage package.json build.sh_functions ./
-
-RUN npm install
-
-CMD ["./rollcage"]
+CMD bash -c "while :; do echo version 1; sleep 3; done"

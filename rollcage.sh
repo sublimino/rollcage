@@ -55,6 +55,7 @@ REGISTRY_USER="${REGISTRY_USER:-}"
 # build
 BUILD_PULL=
 DOCKERFILE_PATH=
+CONTAINER_TEST_COMMAND=
 
 # login
 REGISTRY_PASS="${REGISTRY_PASS:-}"
@@ -122,7 +123,7 @@ function parse_arguments() {
       (build) ACTION=${CURRENT_ARG};;
       (--pull) not_empty_or_usage "${NEXT_ARG:-}"; [[ "${NEXT_ARG:-}" == 'false' ]] && BUILD_PULL=false || BUILD_PULL=true; shift;;
       (--build-path) not_empty_or_usage "${NEXT_ARG:-}"; BUILD_PATH="${NEXT_ARG}"; shift;;
-      (--test) not_empty_or_usage "${NEXT_ARG:-}"; TEST_COMMAND="${NEXT_ARG}"; shift;;
+      (--test) not_empty_or_usage "${NEXT_ARG:-}"; CONTAINER_TEST_COMMAND="${NEXT_ARG}"; shift;;
 
       (login) ACTION=${CURRENT_ARG};;
       (--password) not_empty_or_usage "${NEXT_ARG:-}"; REGISTRY_PASS="${NEXT_ARG}"; shift;;
@@ -222,9 +223,19 @@ perform_build() {
 
   info ${COMMAND}
 
-  local TEST_COMMAND="docker run -t "${TAG}" ${TEST_COMMAND}"
+  echo $CONTAINER_TEST_COMMAND
 
-  ${COMMAND} && { info "${TEST_COMMAND}"; ${TEST_COMMAND}; }
+  ${COMMAND}
+
+  local STATUS=$?
+
+  if [[ ${STATUS} == 0 ]] && [[ -n "${CONTAINER_TEST_COMMAND}" ]]; then
+      local TEST_COMMAND="docker run -t "${TAG}" ${CONTAINER_TEST_COMMAND}"
+      info "${TEST_COMMAND}";
+      ${TEST_COMMAND};
+  else
+    return ${STATUS}
+  fi
 }
 
 perform_push() {
