@@ -36,9 +36,11 @@ export COLOUR_RESET=$(tput sgr0 2>/dev/null :-"")
 # helper functions
 usage() {
   set +o nounset
-  [ "$*" ] && MESSAGE="$*" || MESSAGE=""
-  logMessagePrefix
-  printf "${COLOUR_RED}${MESSAGE}${COLOUR_RESET}\n\n"
+  [ "$*" ] && {
+    MESSAGE="$*"
+    logMessagePrefix
+    printf "${COLOUR_RED}${MESSAGE}${COLOUR_RESET}\n\n"
+  } || MESSAGE=""
 
   sed -n '/^##/,/^$/s/^## \{0,1\}//p' "${THIS_SCRIPT}" \
     | sed "s/%SCRIPT_NAME%/$(basename "${THIS_SCRIPT}")/g"
