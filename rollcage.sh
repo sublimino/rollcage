@@ -58,6 +58,7 @@ ARGUMENTS=()
 ACTION=''
 
 # get-tags
+IS_GETTAGS=0
 IMAGE_USER="${IMAGE_USER:-}"
 IMAGE_NAME="${IMAGE_NAME:-}"
 IMAGE_TAG="${IMAGE_TAG:-}"
@@ -65,14 +66,17 @@ REGISTRY_HOST="${REGISTRY_HOST:=}"
 REGISTRY_USER="${REGISTRY_USER:-}"
 
 # build
+IS_BUILD=0
 BUILD_PULL=
 DOCKERFILE_PATH=
 CONTAINER_TEST_COMMAND=
 
 # login
+IS_LOGIN=0
 REGISTRY_PASS="${REGISTRY_PASS:-}"
 
 # push
+IS_PUSH=0
 FULL_IMAGE_NAME=
 
 # exit on error or pipe failure
@@ -125,22 +129,22 @@ function parse_arguments() {
     fi
 
     case ${CURRENT_ARG} in
-      (get-tags) ACTION=${CURRENT_ARG};;
+      (get-tags) ACTION=${CURRENT_ARG}; IS_GETTAGS=1;;
       (--user) not_empty_or_usage "${NEXT_ARG:-}"; IMAGE_USER="${NEXT_ARG}"; shift;;
       (--image) not_empty_or_usage "${NEXT_ARG:-}"; IMAGE_NAME="${NEXT_ARG}"; shift;;
       (--tag) not_empty_or_usage "${NEXT_ARG:-}"; IMAGE_TAG="${NEXT_ARG}"; shift;;
       (--registry) not_empty_or_usage "${NEXT_ARG:-}"; REGISTRY_HOST="${NEXT_ARG}"; shift;;
       (--registry-user) not_empty_or_usage "${NEXT_ARG:-}"; REGISTRY_USER="${NEXT_ARG}"; shift;;
 
-      (build) ACTION=${CURRENT_ARG};;
+      (build) ACTION=${CURRENT_ARG}; IS_BUILD=1;;
       (--pull) not_empty_or_usage "${NEXT_ARG:-}"; [[ "${NEXT_ARG:-}" == 'false' ]] && BUILD_PULL=false || BUILD_PULL=true; shift;;
       (--build-path) not_empty_or_usage "${NEXT_ARG:-}"; BUILD_PATH="${NEXT_ARG}"; shift;;
       (--test) not_empty_or_usage "${NEXT_ARG:-}"; CONTAINER_TEST_COMMAND="${NEXT_ARG}"; shift;;
 
-      (login) ACTION=${CURRENT_ARG};;
+      (login) ACTION=${CURRENT_ARG}; IS_LOGIN=1;;
       (--password) not_empty_or_usage "${NEXT_ARG:-}"; REGISTRY_PASS="${NEXT_ARG}"; shift;;
 
-      (push) ACTION=${CURRENT_ARG};;
+      (push) ACTION=${CURRENT_ARG}; IS_PUSH=1;;
       (--push-image) not_empty_or_usage "${NEXT_ARG:-}"; FULL_IMAGE_NAME="${NEXT_ARG}"; shift;;
 
       (--config-file) not_empty_or_usage "${NEXT_ARG:-}"; CONFIG_FILE="${NEXT_ARG}"; shift;;
@@ -157,7 +161,7 @@ function parse_arguments() {
 validate_arguments() {
   [[ -z "${ACTION}" ]] && usage "Action required"
 
-  [[ "${ACTION}" == "push" && ${#ARGUMENTS[@]} -gt 0 ]] && EXPECTED_NUM_ARGUMENTS=1
+  [[ "${IS_PUSH}" == 1 && ${#ARGUMENTS[@]} -gt 0 ]] && EXPECTED_NUM_ARGUMENTS=1
 
   check_number_of_expected_arguments
 
@@ -167,11 +171,10 @@ validate_arguments() {
 main() {
   handle_arguments "$@"
 
-  local HANDLER="perform_${ACTION}"
-
-  if ! type -t "${HANDLER}" &>/dev/null; then error "${HANDLER} not found"; fi
-
-  ${HANDLER}
+  [[ "${IS_GETTAGS}" == 1 ]] && perform_get-tags
+  [[ "${IS_LOGIN}" == 1 ]] && perform_login
+  [[ "${IS_BUILD}" == 1 ]] && perform_build
+  [[ "${IS_PUSH}" == 1 ]] && perform_push
 
   return $?
 }
