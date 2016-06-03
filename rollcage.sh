@@ -257,7 +257,7 @@ perform_push() {
 
   info ${COMMAND}
 
-  ${COMMAND} || { (error "Push failed") || true; perform_login && ${COMMAND}; }
+  ${COMMAND} || { warning "Push failed. Attempting login."; perform_login && ${COMMAND}; }
 }
 
 get_version() {
