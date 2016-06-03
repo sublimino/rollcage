@@ -176,7 +176,7 @@ main() {
   [[ "${IS_BUILD}" == 1 ]] && perform_build
   [[ "${IS_PUSH}" == 1 ]] && perform_push
 
-  return $?
+  exit 0
 }
 
 perform_get-tags() {
