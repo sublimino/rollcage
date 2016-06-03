@@ -171,10 +171,10 @@ validate_arguments() {
 main() {
   handle_arguments "$@"
 
-  [[ "${IS_GETTAGS}" == 1 ]] && perform_get-tags
-  [[ "${IS_LOGIN}" == 1 ]] && perform_login
-  [[ "${IS_BUILD}" == 1 ]] && perform_build
-  [[ "${IS_PUSH}" == 1 ]] && perform_push
+  [[ "${IS_GETTAGS}" == 1 ]] && { perform_get-tags || exit $?; }
+  [[ "${IS_LOGIN}" == 1 ]] && { perform_login || exit $?; }
+  [[ "${IS_BUILD}" == 1 ]] && { perform_build || exit $?; }
+  [[ "${IS_PUSH}" == 1 ]] && { perform_push || exit $?; }
 
   exit 0
 }
