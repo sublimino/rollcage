@@ -108,7 +108,7 @@ handle_arguments() {
   validate_arguments "$@"
 }
 
-function parse_arguments() {
+parse_arguments() {
   local CURRENT_ARG
   local NEXT_ARG
   local SPLIT_ARG
