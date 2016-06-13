@@ -18,7 +18,7 @@ duplicate-remote:
   script:
     - env; git checkout $CI_BUILD_REF_NAME && git push --verbose --atomic --prune https://sublimino-bot:$SUBLIMINO_BOT_PASS@github.com/sublimino/$(basename "$(pwd)").git +refs/remotes/origin/*:refs/heads/* +refs/tags/*:refs/tags/*
 
-test-local:
+test-local-install:
   stage: test
   before_script:
     - node -v
@@ -26,7 +26,7 @@ test-local:
   script: 
     - npm test
 
-test-global:
+test-global-install:
   stage: test
   before_script:
     - node -v
