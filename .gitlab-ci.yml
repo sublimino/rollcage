@@ -30,6 +30,7 @@ test-global:
   stage: test
   before_script:
     - node -v
+    - npm install
     - npm install -g .
   script:
     - APP=rollcage npm test
