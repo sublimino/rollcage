@@ -87,6 +87,8 @@ set -o nounset
 set -o noclobber
 
 handle_arguments() {
+  [[ $# == 0 ]] && usage
+
   parse_arguments "$@"
 
   [[ -n ${CONFIG_FILE:-} && -f ${CONFIG_FILE} ]] && {
@@ -157,7 +159,6 @@ parse_arguments() {
 }
 
 validate_arguments() {
-  [[ $# = 0 ]] && usage
   [[ -z "${ACTION}" ]] && usage "Action required"
 
   [[ "${IS_PUSH}" == 1 && ${#ARGUMENTS[@]} -gt 0 ]] && EXPECTED_NUM_ARGUMENTS=1

@@ -4,11 +4,10 @@
   "description": "Continuous Deployment Helper",
   "main": "rollcage",
   "bin": {
-    "rollcage": "rollcage.sh"
+    "rollcage": "rollcage"
   },
   "scripts": {
-    "test": "npm-run-all --parallel test:*",
-    "test:acceptance": "_f() { bats test/acceptance/${1:-*}.sh; }; _f"
+    "test": "_f() { bats test/acceptance/${1:-*}.sh; }; _f"
   },
   "repository": {
     "type": "git",
@@ -19,8 +18,5 @@
   "devDependencies": {
     "bats": "^0.4.2",
     "bats-assert": "github:sublimino/bats-assert#run_assert"
-  },
-  "dependencies": {
-    "npm-run-all": "^1.8.0"
   }
 }

@@ -14,10 +14,16 @@ load test_helper
 }
 
 @test "parser: rejects empty --pull arg" {
-    run_refute  ${APP} --pull
+    run_refute ${APP} --pull
 }
 
 @test "parser: rejects invalid --pull arg" {
-    run_refute  ${APP} --pull --version
+    run_refute ${APP} --pull --version
 }
 
+
+@test "cli: does not error on empty args" {
+    # remove any arguments in the ${APP} variable
+    run_refute ${APP/ */}
+    refute_output_contains "Action required"
+}
