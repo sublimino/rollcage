@@ -1,3 +1,5 @@
 load ../../node_modules/bats-assert/all
 
-APP="./rollcage  --config-file=non-extant-file"
+APP="${APP:-./rollcage}"
+
+APP="${APP} --config-file=non-extant-file"
