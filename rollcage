@@ -213,6 +213,7 @@ perform_git-backup() {
     if [[ ${DRY_RUN:-} == 1 ]]; then
       echo "${COMMAND}"
     else
+      info "${COMMAND}"
       ${COMMAND} || error "Failed to git checkout ${BRANCH_NAME}"
     fi
   }
