@@ -4,7 +4,7 @@ load test_helper
 
 @test "pre-run: deletes images" {
   run_assert docker images -a  \
-    | grep -E 'registry.binarysludge.com/(test-rollcage-user/test-rollcage|sublimino/test-rollcage-other-user)' \
+    | grep -E 'registry.binarysludge.com/(test-rollcage-user/rollcage-test|sublimino/rollcage-test-other-user)' \
     | awk '{print $3}' \
     | \xargs --no-run-if-empty docker rmi --force
 }
