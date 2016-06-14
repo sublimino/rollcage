@@ -16,7 +16,7 @@ cache:
 duplicate-remote:
   stage: test
   script:
-    - COMMAND="$(./rollcage git-backup)"; echo $COMMAND; $COMMAND;
+    - ./rollcage git-backup
 
 test-local-install:
   stage: test

@@ -167,6 +167,7 @@ parse_arguments() {
       (-h|--help) usage;;
       (-v|--version) get_version; exit 0;;
       (--debug) DEBUG=1; set -xe;;
+      (--dry-run) DRY_RUN=1;;
       (--) break;;
       (-*) usage "${CURRENT_ARG}: unknown option";;
       (*) ARGUMENTS+=("${CURRENT_ARG}");
@@ -197,20 +198,42 @@ main() {
 }
 
 perform_git-backup() {
-  local OUTPUT_COMMAND=
+  local COMMAND=
   local GIT_REPO_OWNER=${GIT_REPO_OWNER:-"${IMAGE_USER:-"${REGISTRY_USER:-}"}"}
   local GIT_HOST=${GIT_HOST:-github.com}
   local GIT_USER=${GIT_USER:-"\${GIT_BACKUP_USER}"}
 
-  [[ -z "${GIT_REPO_OWNER}" ]] && error "--git-owner, --user or --registry-user required"
-  [[ -z "${CI_BUILD_REF_NAME:-}" ]] || OUTPUT_COMMAND="git checkout $CI_BUILD_REF_NAME && "
+  [[ -z "${GIT_BACKUP_PASS:-}" ]] && error "\${GIT_BACKUP_PASS} environment variable required"
+  [[ -z "${GIT_REPO_OWNER:-}" ]] && error "--git-owner, --user or --registry-user required"
 
-  OUTPUT_COMMAND="${OUTPUT_COMMAND}git push --verbose --atomic --prune"
-  OUTPUT_COMMAND="${OUTPUT_COMMAND} https://${GIT_USER}:\${GIT_BACKUP_PASS}@${GIT_HOST}/${GIT_REPO_OWNER}/"
-  OUTPUT_COMMAND="${OUTPUT_COMMAND}$(basename "$(pwd)").git"
-  OUTPUT_COMMAND="${OUTPUT_COMMAND} +refs/remotes/origin/*:refs/heads/* +refs/tags/*:refs/tags/*"
+  [[ -z "${CI_BUILD_REF_NAME:-}" ]] || {
+    local BRANCH_NAME="${CI_BUILD_REF_NAME}"
+    COMMAND="git checkout ${BRANCH_NAME}"
 
-  echo "${OUTPUT_COMMAND}"
+    if [[ ${DRY_RUN:-} == 1 ]]; then
+      echo "${COMMAND}"
+    else
+      ${COMMAND} || error "Failed to git checkout ${BRANCH_NAME}"
+    fi
+  }
+
+  COMMAND="git push --verbose --atomic --prune"
+  COMMAND="${COMMAND} https://${GIT_USER}:${GIT_BACKUP_PASS}@${GIT_HOST}/${GIT_REPO_OWNER}/"
+  COMMAND="${COMMAND}$(basename "$(pwd)").git"
+  COMMAND="${COMMAND} +refs/remotes/origin/*:refs/heads/* +refs/tags/*:refs/tags/*"
+
+  if [[ ${DRY_RUN:-} == 1 ]]; then
+    echo "${COMMAND}"
+  else
+    local REDACTED_OUTPUT
+    info "${COMMAND//${GIT_USER}:${GIT_BACKUP_PASS}@${GIT_HOST}/${GIT_USER}:########@${GIT_HOST}}"
+
+    REDACTED_OUTPUT="$(${COMMAND} 2>&1)"
+    local STATUS_CODE=$?
+
+    echo "${REDACTED_OUTPUT//${GIT_USER}:${GIT_BACKUP_PASS}@${GIT_HOST}/${GIT_USER}:########@${GIT_HOST}}"
+    return $STATUS_CODE
+  fi
 }
 
 perform_get-tags() {
@@ -243,7 +266,7 @@ perform_login() {
     --password="${REGISTRY_PASS}" \
     "${REGISTRY_HOST}""
 
-  info ${COMMAND/${REGISTRY_PASS}/########}
+  info ${COMMAND//${REGISTRY_PASS}/########}
 
   ${COMMAND}
 }
@@ -265,8 +288,6 @@ perform_build() {
     "${BUILD_PATH}""
 
   info ${COMMAND}
-
-  echo $CONTAINER_TEST_COMMAND
 
   ${COMMAND}
 
