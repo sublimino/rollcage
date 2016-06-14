@@ -2,3 +2,5 @@ registry=registry.binarysludge.com
 user=sublimino
 
 registry-user=deploy-bot
+
+git-user=sublimino-bot

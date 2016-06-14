@@ -27,6 +27,10 @@
 ##     --tag=name             Image tag [optional, default from env vars]]
 ##     --user=name            Registry image owner [optional]
 ##     --registry=host        Registry host [optional]
+##   git-backup               Backup the git repository to a remote host
+##     --git-owner            Git repository owner i.e. github.com/OWNER/repo [optional, default user/registry-user]
+##     --git-host             Git repository hostname i.e. HOSTNAME/owner/repo [optional, default github.com]
+##     --git-user             Git repository user i.e. GIT-USER:pass@github.com/owner/repo [optional]
 ##
 
 # helper functions
@@ -56,6 +60,12 @@ DRY_RUN=0
 EXPECTED_NUM_ARGUMENTS=0
 ARGUMENTS=()
 ACTION=''
+
+# git-backup
+IS_GITBACKUP=0
+GIT_REPO_OWNER=
+GIT_HOST=
+GIT_USER=
 
 # get-tags
 IS_GETTAGS=0
@@ -129,6 +139,12 @@ parse_arguments() {
     fi
 
     case ${CURRENT_ARG} in
+
+      (git-backup) ACTION=${CURRENT_ARG}; IS_GITBACKUP=1;;
+      (--git-owner) not_empty_or_usage "${NEXT_ARG:-}"; GIT_REPO_OWNER="${NEXT_ARG}"; shift;;
+      (--git-host) not_empty_or_usage "${NEXT_ARG:-}"; GIT_HOST="${NEXT_ARG}"; shift;;
+      (--git-user) not_empty_or_usage "${NEXT_ARG:-}"; GIT_USER="${NEXT_ARG}"; shift;;
+
       (get-tags) ACTION=${CURRENT_ARG}; IS_GETTAGS=1;;
       (--user) not_empty_or_usage "${NEXT_ARG:-}"; IMAGE_USER="${NEXT_ARG}"; shift;;
       (--image) not_empty_or_usage "${NEXT_ARG:-}"; IMAGE_NAME="${NEXT_ARG}"; shift;;
@@ -171,12 +187,30 @@ validate_arguments() {
 main() {
   handle_arguments "$@"
 
+  [[ "${IS_GITBACKUP}" == 1 ]] && { perform_git-backup || exit $?; }
   [[ "${IS_GETTAGS}" == 1 ]] && { perform_get-tags || exit $?; }
   [[ "${IS_LOGIN}" == 1 ]] && { perform_login || exit $?; }
   [[ "${IS_BUILD}" == 1 ]] && { perform_build || exit $?; }
   [[ "${IS_PUSH}" == 1 ]] && { perform_push || exit $?; }
 
   exit 0
+}
+
+perform_git-backup() {
+  local OUTPUT_COMMAND=
+  local GIT_REPO_OWNER=${GIT_REPO_OWNER:-"${IMAGE_USER:-"${REGISTRY_USER:-}"}"}
+  local GIT_HOST=${GIT_HOST:-github.com}
+  local GIT_USER=${GIT_USER:-"\${GIT_BACKUP_USER}"}
+
+  [[ -z "${GIT_REPO_OWNER}" ]] && error "--git-owner, --user or --registry-user required"
+  [[ -z "${CI_BUILD_REF_NAME:-}" ]] || OUTPUT_COMMAND="git checkout $CI_BUILD_REF_NAME && "
+
+  OUTPUT_COMMAND="${OUTPUT_COMMAND}git push --verbose --atomic --prune"
+  OUTPUT_COMMAND="${OUTPUT_COMMAND} https://${GIT_USER}:\${GIT_BACKUP_PASS}@${GIT_HOST}/${GIT_REPO_OWNER}/"
+  OUTPUT_COMMAND="${OUTPUT_COMMAND}$(basename "$(pwd)").git"
+  OUTPUT_COMMAND="${OUTPUT_COMMAND} +refs/remotes/origin/*:refs/heads/* +refs/tags/*:refs/tags/*"
+
+  echo "${OUTPUT_COMMAND}"
 }
 
 perform_get-tags() {
