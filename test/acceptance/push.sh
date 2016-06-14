@@ -7,9 +7,9 @@ load test_helper
       ${APP} push \
       --registry=registry.binarysludge.com \
       --registry-user=test-rollcage-user \
-      --image='test-rollcage' \
+      --image='rollcage-test' \
       --tag='fruity-test' \
       --password='&B518isz0yaX!GYa$c2fnF'
 
-    assert_output_contains 'tag does not exist: registry.binarysludge.com/test-rollcage-user/test-rollcage:fruity-test'
+    assert_output_contains 'tag does not exist: registry.binarysludge.com/test-rollcage-user/rollcage-test:fruity-test'
 }

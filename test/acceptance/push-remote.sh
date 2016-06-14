@@ -9,7 +9,7 @@ setup() {
       --tag="${CI_BUILD_ID}" \
       --registry=registry.binarysludge.com \
       --registry-user=test-rollcage-user \
-      --image='test-rollcage' \
+      --image='rollcage-test' \
       --build-path=test/fixture/simple/
 
     docker logout "${TEST_REGISTRY_HOST}"
@@ -26,7 +26,7 @@ teardown() {
       --tag="${CI_BUILD_ID}" \
       --registry=registry.binarysludge.com \
       --registry-user=test-rollcage-user \
-      --image='test-rollcage' \
+      --image='rollcage-test' \
       --password='&B518isz0yaX!GYa$c2fnF'
 
     assert_output_contains "${CI_BUILD_ID}: digest: sha256:"
