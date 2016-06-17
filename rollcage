@@ -17,6 +17,8 @@
 ##     --pull=true            Pull a newer version of base image  [default true]
 ##     --build-path=path      Set build context [optional, default is current directory]
 ##     --test=command         Run tests in container [optional]
+##   run                      Run image i.e. `%SCRIPT_NAME% run echo "test" -- --rm`
+##     --interactive=true     Add `--interactive` and `--tty` to `docker run`[default true]
 ##   push                     Push an image
 ##     --push-image           Image to push [option, default from env vars]
 ##   login                    Login to a registry
@@ -59,6 +61,7 @@ DRY_RUN=0
 # required defaults
 EXPECTED_NUM_ARGUMENTS=0
 ARGUMENTS=()
+EXTENDED_ARGS=
 ACTION=''
 
 # git-backup
@@ -88,6 +91,10 @@ REGISTRY_PASS="${REGISTRY_PASS:-}"
 # push
 IS_PUSH=0
 FULL_IMAGE_NAME=
+
+# run
+IS_RUN=0
+RUN_INTERACTIVE=1
 
 # exit on error or pipe failure
 set -eo pipefail
@@ -139,11 +146,13 @@ parse_arguments() {
     fi
 
     case ${CURRENT_ARG} in
-
       (git-backup) ACTION=${CURRENT_ARG}; IS_GITBACKUP=1;;
       (--git-owner) not_empty_or_usage "${NEXT_ARG:-}"; GIT_REPO_OWNER="${NEXT_ARG}"; shift;;
       (--git-host) not_empty_or_usage "${NEXT_ARG:-}"; GIT_HOST="${NEXT_ARG}"; shift;;
       (--git-user) not_empty_or_usage "${NEXT_ARG:-}"; GIT_USER="${NEXT_ARG}"; shift;;
+
+      (run) ACTION=${CURRENT_ARG}; IS_RUN=1;;
+      (--interactive) not_empty_or_usage "${NEXT_ARG:-}"; [[ "${NEXT_ARG:-}" == 'false' ]] && RUN_INTERACTIVE=0 || RUN_INTERACTIVE=1; shift;;
 
       (get-tags) ACTION=${CURRENT_ARG}; IS_GETTAGS=1;;
       (--user) not_empty_or_usage "${NEXT_ARG:-}"; IMAGE_USER="${NEXT_ARG}"; shift;;
@@ -168,7 +177,7 @@ parse_arguments() {
       (-v|--version) get_version; exit 0;;
       (--debug) DEBUG=1; set -xe;;
       (--dry-run) DRY_RUN=1;;
-      (--) break;;
+      (--) EXTENDED_ARGS="${@}"; break;;
       (-*) usage "${CURRENT_ARG}: unknown option";;
       (*) ARGUMENTS+=("${CURRENT_ARG}");
     esac
@@ -179,10 +188,11 @@ validate_arguments() {
   [[ -z "${ACTION}" ]] && usage "Action required"
 
   [[ "${IS_PUSH}" == 1 && ${#ARGUMENTS[@]} -gt 0 ]] && EXPECTED_NUM_ARGUMENTS=1
+  [[ "${IS_RUN}" == 1 && ${#ARGUMENTS[@]} -gt 0 ]] && EXPECTED_NUM_ARGUMENTS=${#ARGUMENTS[@]}
 
   check_number_of_expected_arguments
 
-  [[ ${#ARGUMENTS[@]} -gt 0 ]] && FULL_IMAGE_NAME=${ARGUMENTS[0]} || true
+  [[ "${IS_RUN}" == 0 && ${#ARGUMENTS[@]} -gt 0 ]] && FULL_IMAGE_NAME=${ARGUMENTS[0]} || true
 }
 
 main() {
@@ -192,6 +202,7 @@ main() {
   [[ "${IS_GETTAGS}" == 1 ]] && { perform_get-tags || exit $?; }
   [[ "${IS_LOGIN}" == 1 ]] && { perform_login || exit $?; }
   [[ "${IS_BUILD}" == 1 ]] && { perform_build || exit $?; }
+  [[ "${IS_RUN}" == 1 ]] && { perform_run || exit $?; }
   [[ "${IS_PUSH}" == 1 ]] && { perform_push || exit $?; }
 
   exit 0
@@ -314,6 +325,22 @@ perform_push() {
   info ${COMMAND}
 
   ${COMMAND} || { warning "Push failed. Attempting login."; perform_login && ${COMMAND}; }
+}
+
+perform_run() {
+  local FULL_IMAGE_NAME=${FULL_IMAGE_NAME:-}
+  local INTERACTIVE="-it"
+
+  [[ -z "${FULL_IMAGE_NAME}" ]] && FULL_IMAGE_NAME=$(perform_get-tags)
+  [[ -z "${FULL_IMAGE_NAME}" ]] && exit 3
+
+  [[ "${RUN_INTERACTIVE:-0}" == 0 ]] && INTERACTIVE=''
+
+  local COMMAND="docker run ${INTERACTIVE} ${EXTENDED_ARGS:-} ${FULL_IMAGE_NAME} ${ARGUMENTS[@]:-}"
+
+  info ${COMMAND}
+
+  ${COMMAND}
 }
 
 get_version() {
