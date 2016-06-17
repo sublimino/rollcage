@@ -329,14 +329,15 @@ perform_push() {
 
 perform_run() {
   local FULL_IMAGE_NAME=${FULL_IMAGE_NAME:-}
-  local INTERACTIVE="-it"
+  local INTERACTIVE="-it "
 
   [[ -z "${FULL_IMAGE_NAME}" ]] && FULL_IMAGE_NAME=$(perform_get-tags)
   [[ -z "${FULL_IMAGE_NAME}" ]] && exit 3
 
   [[ "${RUN_INTERACTIVE:-0}" == 0 ]] && INTERACTIVE=''
+  [[ -n "${EXTENDED_ARGS:-}" ]] && EXTENDED_ARGS="${EXTENDED_ARGS} "
 
-  local COMMAND="docker run ${INTERACTIVE} ${EXTENDED_ARGS:-} ${FULL_IMAGE_NAME} ${ARGUMENTS[@]:-}"
+  local COMMAND="docker run ${INTERACTIVE}${EXTENDED_ARGS:-}${FULL_IMAGE_NAME} ${ARGUMENTS[@]:-}"
 
   if [[ ${DRY_RUN:-} == 1 ]]; then
     echo "${COMMAND}"
