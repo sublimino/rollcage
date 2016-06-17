@@ -4,12 +4,13 @@ load test_helper
 
 @test "run: accepts run action" {
     run_assert ${APP} \
-      run
+      run --dry-run
 }
 
 @test "run: runs command" {
     run_assert ${APP} \
       run --dry-run \
+      --push-image=rollcage:dev \
       echo 'testerino'
     assert_output_contains "testerino"
 }
@@ -17,6 +18,7 @@ load test_helper
 @test "run: supresses '-it' with --interactive arg" {
     run_assert ${APP} \
       run  --dry-run \
+      --push-image=rollcage:dev \
       --interactive=false echo 'testerino'
     assert_output_contains "docker run rollcage:dev echo testerino"
 }
@@ -24,6 +26,7 @@ load test_helper
 @test "run: passes arguments to docker" {
     run_assert ${APP} \
       --dry-run \
+      --push-image=rollcage:dev \
       run -- -v /home:/home -v=/home:/home
     assert_output_contains "docker run -it -v /home:/home -v=/home:/home rollcage:dev"
 }
@@ -31,6 +34,7 @@ load test_helper
 @test "run: passes arguments to docker with command" {
     run_assert ${APP} \
       --dry-run \
+      --push-image=rollcage:dev \
       run echo 'toast' -- -v /home:/home -v=/home:/home
     assert_output_contains "docker run -it -v /home:/home -v=/home:/home rollcage:dev echo toast"
 }
