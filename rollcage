@@ -338,9 +338,13 @@ perform_run() {
 
   local COMMAND="docker run ${INTERACTIVE} ${EXTENDED_ARGS:-} ${FULL_IMAGE_NAME} ${ARGUMENTS[@]:-}"
 
-  info ${COMMAND}
-
-  ${COMMAND}
+  if [[ ${DRY_RUN:-} == 1 ]]; then
+    echo "${COMMAND}"
+  else
+    info "${COMMAND}"
+    ${COMMAND}
+    return $?
+  fi
 }
 
 get_version() {
