@@ -295,6 +295,7 @@ perform_build() {
   [[ "${DOCKERFILE_NAME}" != "./Dockerfile" ]] && DOCKERFILE_OPTION="--file=${DOCKERFILE_NAME}"
 
   local COMMAND="docker build --pull=${BUILD_PULL} \
+    --rm=true \
     --tag "${TAG}" \
     ${DOCKERFILE_OPTION} \
     "${BUILD_PATH}""
