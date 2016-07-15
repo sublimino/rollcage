@@ -2,7 +2,7 @@
 
 load test_helper
 
-@test "cli: accepts more than one action" {
+@test "multi-action: accepts more than one action" {
     run env -i \
       timeout -k 1 1 \
       ${APP} \
@@ -11,5 +11,5 @@ load test_helper
       --pull=false
 
     assert_line 0 'rollcage:dev'
-    assert_output_contains 'docker build --pull=false --tag rollcage:dev .'
+    assert_output_contains 'docker build'
 }
