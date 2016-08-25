@@ -6,7 +6,7 @@ rollcage - simple dev/CI Docker helper
 Usage: rollcage [OPTIONS] COMMAND
 
 Options:
-  --config=file            Configuration file
+  --config=file            Configuration file, parsed after flags. Directives are command options without prefixed `--` [default `.rollcage`]
   -h, --help               Display this message
   -v, --version            Print version
 
@@ -33,25 +33,26 @@ Commands:
     --user=name            Registry image owner [optional]
     --registry=host        Registry host [optional]
 
-  git-backup               Backup the git repository to a remote host
+  git-backup               Backup the git repository to a remote host using password in environment variable GIT_BACKUP_PASS
     --git-owner            Git repository owner i.e. github.com/OWNER/repo [optional, default user/registry-user]
     --git-host             Git repository hostname i.e. HOSTNAME/owner/repo [optional, default github.com]
     --git-user             Git repository user i.e. GIT-USER:pass@github.com/owner/repo [optional]
 ```
 
 Using `rollcage` for development
-================================
+--------------------------------
+Assuming the current directory name is `my-demo/` running this command:
 
-`# rollcage build run -- --name my-demo -p 8080:8080 --rm -e VIRTUAL_HOST=my-demo.local -v /tmp`
- 
-Assuming the directory name is `my-demo/` this will run:
+`$ rollcage build run -- --name demo-app -p 8080:8080 --rm -e VIRTUAL_HOST=my-demo.local -v /tmp`
+
+Will run these commands: 
 
 - `docker build --pull=true --rm=true --tag docker-my-demo:dev`
-- `docker run -it --name my-demo -p 8080:8080 --rm -e VIRTUAL_HOST=my-demo -v /tmp docker-my-demo:dev`
+- `docker run -it --name demo-app -p 8080:8080 --rm -e VIRTUAL_HOST=my-demo -v /tmp docker-my-demo:dev`
 
 
 Using `git-backup` from GitLab to GitHub
-========================================
+----------------------------------------
 
 This is useful for mirroring a repo to GitHub from a private GitLab instance.
 
