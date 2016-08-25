@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# rollcage - simple Dockerised continuous deployment
+# rollcage - simple dev/CI Docker helper
 #
 # Andrew Martin, 19/05/2016
 # sublimino@gmail.com
@@ -8,7 +8,7 @@
 ## Usage: %SCRIPT_NAME% [OPTIONS] COMMAND
 ##
 ## Options:
-##   --config=file            Configuration file
+##   --config=file            Configuration file, parsed after flags. Directives are command options without prefixed `--` [default `.rollcage`]
 ##   -h, --help               Display this message
 ##   -v, --version            Print version
 ##
@@ -35,7 +35,7 @@
 ##     --user=name            Registry image owner [optional]
 ##     --registry=host        Registry host [optional]
 ##
-##   git-backup               Backup the git repository to a remote host
+##   git-backup               Backup the git repository to a remote host using password in environment variable GIT_BACKUP_PASS
 ##     --git-owner            Git repository owner i.e. github.com/OWNER/repo [optional, default user/registry-user]
 ##     --git-host             Git repository hostname i.e. HOSTNAME/owner/repo [optional, default github.com]
 ##     --git-user             Git repository user i.e. GIT-USER:pass@github.com/owner/repo [optional]
