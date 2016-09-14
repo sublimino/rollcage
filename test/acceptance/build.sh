@@ -50,3 +50,14 @@ load test_helper
       --build-path=test/fixture/simple/
     assert_output_contains "CMD echo \"SIMPLE DOCKERFILE\""
 }
+
+@test "build: adds VCS build arg" {
+i   skip
+    # https://microbadger.com/#/labels
+    run_assert env -i \
+      IMAGE_TAG=123 \
+      ${APP} build --pull=false \
+      --build-path=test/fixture/simple/
+    assert_output_contains "CMD echo \"SIMPLE DOCKERFILE\""
+}
+
