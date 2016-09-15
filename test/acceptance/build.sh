@@ -52,7 +52,7 @@ load test_helper
 }
 
 @test "build: adds VCS build arg" {
-i   skip
+    skip
     # https://microbadger.com/#/labels
     run_assert env -i \
       IMAGE_TAG=123 \

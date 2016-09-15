@@ -39,7 +39,6 @@ load test_helper
     assert_output_contains "docker run -it -v /home:/home -v=/home:/home rollcage:dev echo toast"
 }
 
-
 @test "run: parses tag from image" {
     run_assert ${APP} \
       --dry-run \
@@ -58,3 +57,14 @@ load test_helper
     refute_output_contains "docker run -it errordeveloper/kube-installer:toast-assault:dev"
     assert_output_contains "docker run -it errordeveloper/kube-installer:toast-assault"
 }
+
+@test "run: runs images from the hub" {
+    skip
+    # rollcage run --image _/alpine:latest
+    run_assert ${APP} \
+      --dry-run \
+      --push-image=rollcage:dev \
+      run echo 'toast' -- -v /home:/home -v=/home:/home
+    assert_output_contains "docker run -it -v /home:/home -v=/home:/home rollcage:dev echo toast"
+}
+
