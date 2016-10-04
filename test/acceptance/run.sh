@@ -58,22 +58,28 @@ load test_helper
     assert_output_contains "docker run -it errordeveloper/kube-installer:toast-assault"
 }
 
-
 @test "run: errors when --image and --tag passed when --tag contains colon" {
-    skip
-    run_assert ${APP} \
+    run_refute ${APP} \
       --dry-run \
-      --tag latest \
+      --image some-image \
+      --tag another-image:latest \
       run 
-    refute_output_contains "docker run -it errordeveloper/kube-installer:toast-assault:dev"
-    assert_output_contains "docker run -it errordeveloper/kube-installer:latest"
+    refute_output_contains "docker run -it"
 }
 
 @test "run: sets image with --tag when --tag contains colon" {
-    skip
     run_assert ${APP} \
       --dry-run \
       --tag ansible-dp-test:latest \
+      run 
+    refute_output_contains "docker run -it ansible-dp-test:latest:dev"
+    assert_output_contains "docker run -it ansible-dp-test:latest"
+}
+
+@test "run: sets image with --tag when --tag contains colon and slash" {
+    run_assert ${APP} \
+      --dry-run \
+      --tag errordeveloper/ansible-dp-test:latest \
       run 
     refute_output_contains "docker run -it errordeveloper/ansible-dp-test:latest:dev"
     assert_output_contains "docker run -it errordeveloper/ansible-dp-test:latest"

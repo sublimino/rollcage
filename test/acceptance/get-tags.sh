@@ -20,6 +20,14 @@ load test_helper
     assert_output_contains "toast:1234"
 }
 
+@test "get-tags: accepts tag with colon" {
+    run_assert ${APP} get-tags --tag=12:34
+}
+
+@test "get-tags: errors on invalid tag" {
+    run_refute ${APP} get-tags --tag=12:34:56
+}
+
 @test "get-tags: gets image user from arguments" {
     run ${APP} get-tags --user=toastman --image=toast --tag=1234
 

@@ -258,10 +258,28 @@ perform_get-tags() {
   local REGISTRY_HOST="${REGISTRY_HOST:-}"
   local REGISTRY_USER="${REGISTRY_USER:-}"
   local IMAGE_USER="${IMAGE_USER:-${REGISTRY_USER:-}}"
-  local IMAGE_NAME="${IMAGE_NAME:-$(basename "$(pwd)")}"
+  local IMAGE_NAME="${IMAGE_NAME:-}"
+  local DIRECTORY_NAME="$(basename "$(pwd)")"
   local IMAGE_TAG="${IMAGE_TAG:-${CI_BUILD_ID:-}}"
   local TEMP_IMAGE_TAG
-  
+
+  local IMAGE_TAG_COLONS=$(echo "${IMAGE_TAG}" | grep ':' -o  | wc -l)
+
+  [[ ${IMAGE_TAG_COLONS} -gt 1 ]] && {
+    error "Invalid tag '${TAG}'"
+  }
+
+  if [[ ${IMAGE_TAG_COLONS} -gt 0 ]] && [[ -n "${IMAGE_NAME:-}" ]]; then
+    error "Cannot accept --image and --tag when --tag has a colon"
+  fi
+
+  if [[ ${IMAGE_TAG_COLONS} == 1 ]]; then
+    IMAGE_NAME=${IMAGE_TAG//:*/}
+    IMAGE_TAG=${IMAGE_TAG//*:/}
+  fi
+
+  [[ -z "${IMAGE_NAME:-}" ]] && IMAGE_NAME="${DIRECTORY_NAME}"
+
   [[ -z "${IMAGE_TAG}" ]] && [[ -n "${IMAGE_NAME:-}" ]] && {
     TEMP_IMAGE_TAG=$(echo "${IMAGE_NAME}" | sed 's#[^/]*/[^:]*:##')
     [[ "${TEMP_IMAGE_TAG}" != "${IMAGE_NAME}" ]] && {
