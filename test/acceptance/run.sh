@@ -58,6 +58,27 @@ load test_helper
     assert_output_contains "docker run -it errordeveloper/kube-installer:toast-assault"
 }
 
+
+@test "run: errors when --image and --tag passed when --tag contains colon" {
+    skip
+    run_assert ${APP} \
+      --dry-run \
+      --tag latest \
+      run 
+    refute_output_contains "docker run -it errordeveloper/kube-installer:toast-assault:dev"
+    assert_output_contains "docker run -it errordeveloper/kube-installer:latest"
+}
+
+@test "run: sets image with --tag when --tag contains colon" {
+    skip
+    run_assert ${APP} \
+      --dry-run \
+      --tag ansible-dp-test:latest \
+      run 
+    refute_output_contains "docker run -it errordeveloper/ansible-dp-test:latest:dev"
+    assert_output_contains "docker run -it errordeveloper/ansible-dp-test:latest"
+}
+
 @test "run: runs images from the hub" {
     skip
     # rollcage run --image _/alpine:latest
@@ -68,3 +89,4 @@ load test_helper
     assert_output_contains "docker run -it -v /home:/home -v=/home:/home rollcage:dev echo toast"
 }
 
+# --image kube-baremetal-tests:latest
