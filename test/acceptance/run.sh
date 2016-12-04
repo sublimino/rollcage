@@ -43,6 +43,7 @@ load test_helper
     run_assert ${APP} \
       --dry-run \
       --image errordeveloper/kube-installer:latest \
+      --debug \
       run 
     refute_output_contains "docker run -it errordeveloper/kube-installer:latest:dev"
     assert_output_contains "docker run -it errordeveloper/kube-installer:latest"
