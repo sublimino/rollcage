@@ -7,7 +7,7 @@
     "rollcage": "rollcage"
   },
   "scripts": {
-    "test": "_f() { bats test/acceptance/${1:-*}.sh; }; _f"
+    "test": "_f() { pwd; ls -aslp ../ ; bats test/acceptance/${1:-*}.sh; }; _f"
   },
   "repository": {
     "type": "git",
