@@ -27,6 +27,7 @@
 ##
 ##   login                    Login to a registry
 ##     --password pass        Registry password
+##     --registry=host        Registry host [optional, default docker.io]
 ##     --registry-user user   Registry login user if different from --user [optional]
 ##
 ##   get-tags                 Get auto-generated tags
