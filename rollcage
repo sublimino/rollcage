@@ -21,6 +21,7 @@
 ##
 ##   run                      Run image i.e. `%SCRIPT_NAME% run echo "test" -- --rm`
 ##     --interactive=true     Add `--interactive` and `--tty` to `docker run`[default true]
+##     --terminal=true        Override `--interactive=false` by adding a terminal [default false]
 ##
 ##   push                     Push an image
 ##     --push-image           Image to push [option, default from env vars]
@@ -102,6 +103,7 @@ FULL_IMAGE_NAME=
 # run
 IS_RUN=0
 RUN_INTERACTIVE=1
+RUN_TERMINAL=""
 
 # exit on error or pipe failure
 set -eo pipefail
@@ -160,6 +162,7 @@ parse_arguments() {
 
       (run) ACTION=${CURRENT_ARG}; IS_RUN=1;;
       (--interactive) not_empty_or_usage "${NEXT_ARG:-}"; [[ "${NEXT_ARG:-}" == 'false' ]] && RUN_INTERACTIVE=0 || RUN_INTERACTIVE=1; shift;;
+      (--terminal) not_empty_or_usage "${NEXT_ARG:-}"; [[ "${NEXT_ARG:-}" == 'false' ]] && RUN_TERMINAL=0 || RUN_TERMINAL=1; shift;;
 
       (get-tags) ACTION=${CURRENT_ARG}; IS_GETTAGS=1;;
       (--user) not_empty_or_usage "${NEXT_ARG:-}"; IMAGE_USER="${NEXT_ARG}"; shift;;
@@ -179,7 +182,7 @@ parse_arguments() {
       (push) ACTION=${CURRENT_ARG}; IS_PUSH=1;;
       (--push-image) not_empty_or_usage "${NEXT_ARG:-}"; FULL_IMAGE_NAME="${NEXT_ARG}"; shift;;
 
-      (--config-file) not_empty_or_usage "${NEXT_ARG:-}"; CONFIG_FILE="${NEXT_ARG}"; shift;;
+      (--config) not_empty_or_usage "${NEXT_ARG:-}"; CONFIG_FILE="${NEXT_ARG}"; shift;;
       (-h|--help) usage;;
       (-v|--version) get_version; exit 0;;
       (--debug) DEBUG=1; set -xe;;
@@ -285,15 +288,15 @@ perform_get-tags() {
     TEMP_IMAGE_TAG=$(echo "${IMAGE_NAME}" | sed 's#[^/]*/[^:]*:##')
     [[ "${TEMP_IMAGE_TAG}" != "${IMAGE_NAME}" ]] && {
         IMAGE_TAG="${TEMP_IMAGE_TAG}"
-        IMAGE_NAME=${IMAGE_NAME//:${IMAGE_TAG}/} 
+        IMAGE_NAME=${IMAGE_NAME//:${IMAGE_TAG}/}
     }
-  } 
+  }
 
   [[ -z "${IMAGE_TAG}" ]] && IMAGE_TAG="dev"
 
   TEMP_IMAGE_TAG=$(echo "${IMAGE_NAME}" | sed 's#[^/]*/[^:]*:##')
-  IMAGE_NAME=${IMAGE_NAME//:${TEMP_IMAGE_TAG}/} 
-          
+  IMAGE_NAME=${IMAGE_NAME//:${TEMP_IMAGE_TAG}/}
+
   [[ -n "${REGISTRY_HOST}" ]] && REGISTRY_HOST="${REGISTRY_HOST}/"
   [[ -n "${IMAGE_USER}" ]] && IMAGE_USER="${IMAGE_USER}/"
 
@@ -365,15 +368,18 @@ perform_push() {
 
 perform_run() {
   local FULL_IMAGE_NAME=${FULL_IMAGE_NAME:-}
-  local INTERACTIVE="-it "
+  local INTERACTIVE="-i "
+  local TERMINAL="-t "
+  local INT_TERM="${INTERACTIVE} ${TERMINAL}"
 
   [[ -z "${FULL_IMAGE_NAME}" ]] && FULL_IMAGE_NAME=$(perform_get-tags)
   [[ -z "${FULL_IMAGE_NAME}" ]] && exit 3
 
-  [[ "${RUN_INTERACTIVE:-0}" == 0 ]] && INTERACTIVE=''
+  [[ "${RUN_INTERACTIVE:-0}" == 0 ]] && INT_TERM=''
+  [[ "${RUN_TERMINAL:-0}" != 0 ]] && INT_TERM="${TERMINAL}"
   [[ -n "${EXTENDED_ARGS:-}" ]] && EXTENDED_ARGS="${EXTENDED_ARGS} "
 
-  local COMMAND="docker run ${INTERACTIVE}${EXTENDED_ARGS:-}${FULL_IMAGE_NAME} ${ARGUMENTS[@]:-}"
+  local COMMAND="docker run ${INT_TERM}${EXTENDED_ARGS:-}${FULL_IMAGE_NAME} ${ARGUMENTS[@]:-}"
 
   if [[ ${DRY_RUN:-} == 1 ]]; then
     echo "${COMMAND}"
