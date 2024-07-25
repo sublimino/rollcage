@@ -266,7 +266,7 @@ perform_get-tags() {
   local REGISTRY_USER="${REGISTRY_USER:-}"
   local IMAGE_USER="${IMAGE_USER:-${REGISTRY_USER:-}}"
   local IMAGE_NAME="${IMAGE_NAME:-}"
-  local DIRECTORY_NAME="$(basename "$(pwd)")"
+  local DIRECTORY_NAME="$(basename "$(pwd)" | tr 'A-Z' 'a-z')"
   local IMAGE_TAG="${IMAGE_TAG:-${CI_BUILD_ID:-}}"
   local TEMP_IMAGE_TAG
 
@@ -299,6 +299,12 @@ perform_get-tags() {
 
   TEMP_IMAGE_TAG=$(echo "${IMAGE_NAME}" | sed 's#[^/]*/[^:]*:##')
   IMAGE_NAME=${IMAGE_NAME//:${TEMP_IMAGE_TAG}/}
+
+  if echo "${IMAGE_NAME}" | grep -q '/'; then
+      IMAGE_USER=''
+      REGISTRY_HOST=''
+      IMAGE_NAME=$(echo "${IMAGE_NAME}" | sed 's#^_/##')
+  fi
 
   [[ -n "${REGISTRY_HOST}" ]] && REGISTRY_HOST="${REGISTRY_HOST}/"
   [[ -n "${IMAGE_USER}" ]] && IMAGE_USER="${IMAGE_USER}/"

@@ -87,13 +87,11 @@ load test_helper
 }
 
 @test "run: runs images from the hub" {
-    skip
-    # rollcage run --image _/alpine:latest
     run_assert ${APP} \
       --dry-run \
-      --push-image=rollcage:dev \
+      --image _/alpine:latest \
       run echo 'toast' -- -v /home:/home -v=/home:/home
-    assert_output_contains "docker run -it -v /home:/home -v=/home:/home rollcage:dev echo toast"
+    assert_output_contains "docker run -it -v /home:/home -v=/home:/home alpine:latest echo toast"
 }
 
 # --image kube-baremetal-tests:latest
