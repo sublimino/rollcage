@@ -15,7 +15,7 @@
 ## Commands:
 ##
 ##   build                    Build Dockerfile
-##     --pull=true            Pull a newer version of base image  [default true]
+##     --pull=false           Pull a newer version of base image  [default false]
 ##     --build-path=path      Set build context [optional, default is current directory]
 ##     --test=command         Run tests in container [optional]
 ##
@@ -122,6 +122,9 @@ handle_arguments() {
     local PREVIOUS_ARGUMENTS="$@"
     local SPLIT_ARG
     while read LINE; do
+      if [[ "${LINE:0:1}" = '#' ]]; then
+        continue;
+      fi
       LINE="--${LINE}"
       IFS='=' read -ra SPLIT_ARG <<< "${LINE}"
       if ! grep -q -- "${SPLIT_ARG[0]}" <<< "${PREVIOUS_ARGUMENTS}" >/dev/null; then
@@ -282,7 +285,7 @@ perform_get-tags() {
     IMAGE_TAG=${IMAGE_TAG//*:/}
   fi
 
-  [[ -z "${IMAGE_NAME:-}" ]] && IMAGE_NAME="${DIRECTORY_NAME}"
+  [[ -z "${IMAGE_NAME:-}" ]] && IMAGE_NAME=$(echo "${DIRECTORY_NAME}" | tr 'A-Z' 'a-z' | sed 's,[\.0-9],,g')
 
   [[ -z "${IMAGE_TAG}" ]] && [[ -n "${IMAGE_NAME:-}" ]] && {
     TEMP_IMAGE_TAG=$(echo "${IMAGE_NAME}" | sed 's#[^/]*/[^:]*:##')
@@ -322,7 +325,7 @@ perform_login() {
 }
 
 perform_build() {
-  local BUILD_PULL=${BUILD_PULL:-true}
+  local BUILD_PULL=${BUILD_PULL:-false}
   local BUILD_PATH=${BUILD_PATH:-.}
   local DOCKERFILE_NAME=${DOCKERFILE_NAME:-"${BUILD_PATH}/Dockerfile"}
 
